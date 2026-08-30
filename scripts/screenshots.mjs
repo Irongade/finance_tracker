@@ -51,14 +51,14 @@ for (const [name, viewport] of Object.entries(VIEWPORTS)) {
     await page.goto(`${BASE}${route}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(400);
     const slug = route === "/" ? "dashboard" : route.slice(1).replace(/\//g, "-");
-    await page.screenshot({ path: `${OUT}/${name}-${slug}.png`, fullPage: true });
+    await page.screenshot({ path: `${OUT}/${name}-${slug}.png`, fullPage: true, animations: "disabled" });
   }
 
   // quick-add sheet
   await page.goto(`${BASE}/transactions`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Log spending" }).first().click();
   await page.waitForTimeout(500);
-  await page.screenshot({ path: `${OUT}/${name}-quick-add.png` });
+  await page.screenshot({ path: `${OUT}/${name}-quick-add.png`, animations: "disabled" });
   await page.getByLabel("Amount").fill("20");
   await page.getByLabel("Description").fill("Takeaway");
   await page.getByRole("combobox", { name: "Category" }).click();
@@ -67,7 +67,7 @@ for (const [name, viewport] of Object.entries(VIEWPORTS)) {
   await page.getByLabel("Shared cost").click();
   await page.getByRole("button", { name: "Log spending" }).last().click();
   await page.waitForTimeout(600);
-  await page.screenshot({ path: `${OUT}/${name}-after-quick-add.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${name}-after-quick-add.png`, fullPage: true, animations: "disabled" });
 
   // dashboard reflects it, then settle up
   await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
@@ -76,10 +76,10 @@ for (const [name, viewport] of Object.entries(VIEWPORTS)) {
     .first()
     .click();
   await page.waitForTimeout(500);
-  await page.screenshot({ path: `${OUT}/${name}-settle-up.png` });
+  await page.screenshot({ path: `${OUT}/${name}-settle-up.png`, animations: "disabled" });
   await page.getByRole("button", { name: "Record payment" }).click();
   await page.waitForTimeout(600);
-  await page.screenshot({ path: `${OUT}/${name}-after-settle.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${name}-after-settle.png`, fullPage: true, animations: "disabled" });
 
   await context.close();
 }
