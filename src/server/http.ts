@@ -113,4 +113,15 @@ export function handler<A extends unknown[]>(fn: (req: Request, ...args: A) => P
   };
 }
 
+/**
+ * The public origin the caller used, for links we hand back (invite URLs).
+ * Behind Vercel's proxy the forwarded headers carry the real host; locally it
+ * is BETTER_AUTH_URL or the request itself.
+ */
+export function publicOrigin(req: Request): string {
+  const forwardedHost = req.headers.get("x-forwarded-host");
+  if (forwardedHost) return `${req.headers.get("x-forwarded-proto") ?? "https"}://${forwardedHost}`;
+  return process.env.BETTER_AUTH_URL ?? new URL(req.url).origin;
+}
+
 export type RouteParams<K extends string> = { params: Promise<Record<K, string>> };

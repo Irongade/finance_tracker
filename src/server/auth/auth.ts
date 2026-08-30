@@ -17,6 +17,28 @@ import { getServices } from "@/server/services";
 export const INVITE_COOKIE = "ap_invite";
 const DAY = 60 * 60 * 24;
 
+/**
+ * Where the app lives. Locally that is BETTER_AUTH_URL (http://localhost:3000).
+ * On Vercel the origin is derived per request so production, preview
+ * deployments and a custom domain (set BETTER_AUTH_URL when you add one) all
+ * pass the origin check; the production URL is the fallback.
+ */
+function baseURLConfig() {
+  const explicit = process.env.BETTER_AUTH_URL;
+  if (!process.env.VERCEL) return { baseURL: explicit, trustedOrigins: explicit ? [explicit] : undefined };
+  const production =
+    explicit ??
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : undefined);
+  const hosts = new Set<string>(["*.vercel.app"]);
+  if (production) hosts.add(new URL(production).host);
+  return {
+    baseURL: { allowedHosts: [...hosts], fallback: production, protocol: "https" as const },
+    trustedOrigins: [...(production ? [production] : []), "https://*.vercel.app"],
+  };
+}
+
+const origin = baseURLConfig();
+
 async function authUserCount(): Promise<number> {
   const [r] = await getDb().select({ n: count() }).from(s.authUser);
   return r?.n ?? 0;
@@ -24,9 +46,9 @@ async function authUserCount(): Promise<number> {
 
 export const auth = betterAuth({
   appName: "Ade & P",
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: origin.baseURL,
   secret: process.env.BETTER_AUTH_SECRET,
-  trustedOrigins: process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : undefined,
+  trustedOrigins: origin.trustedOrigins,
   database: drizzleAdapter(getDb(), {
     provider: "pg",
     schema: {

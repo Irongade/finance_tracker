@@ -25,7 +25,7 @@ Secrets live in `.env.local` locally and in Vercel env vars in production: `DATA
 
 1. `pnpm db:migrate:prod` (creates the tables on Neon; re-run after every new migration).
 2. In Vercel: import the project (GitHub) or `pnpm dlx vercel` from this folder; framework Next.js, Node 22, build `pnpm build`.
-3. Env vars: `DATABASE_URL` = Neon pooled URL, `BETTER_AUTH_SECRET` = fresh `openssl rand -base64 32`, `BETTER_AUTH_URL` = `https://<project>.vercel.app` (update if you add a domain).
+3. Env vars: `DATABASE_URL` = Neon pooled URL, `BETTER_AUTH_SECRET` = fresh `openssl rand -base64 32`. `BETTER_AUTH_URL` is optional on Vercel: the auth origin is derived from each request (production URL, preview URLs and `*.vercel.app` are all trusted). Set it to `https://yourdomain` when you attach a custom domain, then redeploy. Env var changes apply on the next deployment.
 4. First visit `/register` creates the household; upload the workbook in onboarding; invite your partner from Settings.
 
 ## Migrations
