@@ -49,3 +49,7 @@ Time to restore is minutes; the schema is small and every table carries `househo
 - Binaries: `/Applications/Postgres.app/Contents/Versions/latest/bin/{psql,pg_dump,pg_restore,createdb}`
 - Data: `~/Library/Application Support/Postgres/var-18`
 - Local dump: `pg_dump postgresql://localhost:5432/finance_tracker --format=custom --file local.dump`
+
+### Postgres.app client permissions
+
+Postgres.app 18 asks once per client executable before it may connect (`FATAL: You did not confirm the permission dialog`). Each Node binary counts separately: the nvm `node v22.21.1` used by `pnpm dev` / `next start` needs to be allowed in **Postgres.app > Settings > Client Applications** (or by clicking Allow when the dialog appears). The current allow-list is visible with `defaults read com.postgresapp.Postgres2 ClientApplicationPermissions`.

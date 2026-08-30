@@ -2,7 +2,9 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
-  fullyParallel: true,
+  // the flows share one seeded household, so run them one at a time
+  fullyParallel: false,
+  workers: 1,
   reporter: "list",
   use: {
     baseURL: process.env.BASE_URL ?? "http://localhost:3000",

@@ -40,7 +40,7 @@ export function GoalCard({
   const g = goal.goal;
   const pct = Math.round(goal.progress * 100);
   return (
-    <article className="fade-in flex flex-col gap-4 rounded-[10px] border border-hairline bg-surface p-5">
+    <article className="fade-in flex min-w-0 flex-col gap-4 rounded-[10px] border border-hairline bg-surface p-5">
       <header className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">

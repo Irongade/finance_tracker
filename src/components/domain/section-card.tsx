@@ -21,7 +21,7 @@ export function SectionCard({
   flush?: boolean;
 }) {
   return (
-    <section className={cn("fade-in rounded-[10px] border border-hairline bg-surface", className)}>
+    <section className={cn("fade-in min-w-0 rounded-[10px] border border-hairline bg-surface", className)}>
       {title || action ? (
         <header className={cn("flex items-start justify-between gap-3 px-5 pt-5 md:px-6", flush ? "pb-3" : "pb-3")}>
           <div className="min-w-0">
