@@ -1,0 +1,192 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Section 7.2 design tokens. The workbook's palette, exposed both as the
+ * shadcn semantic variables and as named colours. A dark theme later is a
+ * swap of the :root block, not a redesign.
+ */
+:root {
+  /* palette */
+  --ledger-navy: #1f3864;
+  --workbook-blue: #4472c4;
+  --paper: #f6f8fb;
+  --surface: #ffffff;
+  --hairline: #e2e8f2;
+  --row-hover: #eff3f9;
+  --ink: #1b2a44;
+  --ink-muted: #5a6b85;
+  --mint: #e2efda;
+  --fern: #1e6f43;
+  --blush: #fbeaea;
+  --brick: #b3261e;
+  --butter: #fff4ce;
+  --amber: #9a6700;
+  --ade-teal: #2e8fa3;
+  --p-plum: #8a4fbe;
+  /* darker person shades for small text on light tints (AA) */
+  --ade-teal-ink: #1f6675;
+  --p-plum-ink: #6a3a96;
+
+  /* shadcn semantics */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--workbook-blue);
+  --primary-foreground: #ffffff;
+  --secondary: var(--row-hover);
+  --secondary-foreground: var(--ledger-navy);
+  --muted: var(--row-hover);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--row-hover);
+  --accent-foreground: var(--ledger-navy);
+  --destructive: var(--brick);
+  --border: var(--hairline);
+  --input: var(--hairline);
+  --ring: var(--workbook-blue);
+  --chart-1: var(--workbook-blue);
+  --chart-2: var(--ledger-navy);
+  --chart-3: var(--ade-teal);
+  --chart-4: var(--p-plum);
+  --chart-5: var(--fern);
+  --radius: 10px;
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ledger-navy);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--row-hover);
+  --sidebar-accent-foreground: var(--ledger-navy);
+  --sidebar-border: var(--hairline);
+  --sidebar-ring: var(--workbook-blue);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-heading: var(--font-sans);
+
+  --color-navy: var(--ledger-navy);
+  --color-blue: var(--workbook-blue);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-hairline: var(--hairline);
+  --color-row-hover: var(--row-hover);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-mint: var(--mint);
+  --color-fern: var(--fern);
+  --color-blush: var(--blush);
+  --color-brick: var(--brick);
+  --color-butter: var(--butter);
+  --color-amber: var(--amber);
+  --color-ade: var(--ade-teal);
+  --color-ade-ink: var(--ade-teal-ink);
+  --color-p: var(--p-plum);
+  --color-p-ink: var(--p-plum-ink);
+  --color-ade-teal: var(--ade-teal);
+  --color-p-plum: var(--p-plum);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    font-size: 14px;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--workbook-blue) 22%, white);
+  }
+}
+
+@utility money {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-variation-settings:
+    "opsz" 24,
+    "SOFT" 30;
+  letter-spacing: -0.01em;
+}
+
+@utility fade-in {
+  animation: fade-in 150ms ease-out backwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
