@@ -26,7 +26,7 @@ import { formatMonth, monthOf } from "@/domain/dates";
 import { billInputSchema } from "@/domain/schemas";
 import type { Bill, BillView, Owner } from "@/domain/types";
 import { cn } from "@/lib/utils";
-import { newId, useHousehold } from "@/mock/store";
+import { newId, useHousehold } from "@/store/household-store";
 
 export default function BillsPage() {
   const { view, users, household, clock, dispatch } = useHousehold();

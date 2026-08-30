@@ -28,7 +28,7 @@ import { formatPence } from "@/domain/money";
 import { debtInputSchema } from "@/domain/schemas";
 import type { Debt } from "@/domain/types";
 import { cn } from "@/lib/utils";
-import { newId, useHousehold } from "@/mock/store";
+import { newId, useHousehold } from "@/store/household-store";
 
 export default function DebtsPage() {
   const { view, users, dispatch } = useHousehold();

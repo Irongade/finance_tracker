@@ -19,9 +19,13 @@ export interface Clock {
 // ---------------------------------------------------------------------------
 
 export interface User {
+  /** household member id (not the auth account id) */
   id: string;
+  /** 1 = user1 (Ade), 2 = user2 */
+  position: 1 | 2;
   name: string;
-  email: string;
+  /** null until the member has accepted the invite and signed up */
+  email: string | null;
 }
 
 export type SplitMethod = "fifty_fifty" | "proportional" | "custom";

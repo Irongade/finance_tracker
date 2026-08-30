@@ -31,14 +31,13 @@ import { formatPence, formatPercent } from "@/domain/money";
 import { investmentAccountInputSchema } from "@/domain/schemas";
 import type { InvestmentAccount, InvestmentWrapper, Owner } from "@/domain/types";
 import { cn } from "@/lib/utils";
-import { CATEGORY } from "@/mock/fixtures";
-import { newId, useHousehold } from "@/mock/store";
+import { newId, useHousehold } from "@/store/household-store";
 
 const ISA_NOTE =
   "ISAs: £20,000/year allowance per person across cash ISAs, S&S ISAs and LISAs (LISA money counts toward it).";
 
 export default function InvestmentsPage() {
-  const { view, users, household, clock, dispatch } = useHousehold();
+  const { view, users, household, clock, dispatch, transferCategoryId } = useHousehold();
   const { open } = useQuickAdd();
   const [adding, setAdding] = useState(false);
   const [month, setMonth] = useState(monthOf(clock.today));
@@ -219,7 +218,7 @@ export default function InvestmentsPage() {
                       onClick={() =>
                         open({
                           description: `${a.account.name} contribution`,
-                          categoryId: CATEGORY.investmentContribution,
+                          categoryId: transferCategoryId("investment"),
                           linkedInvestmentId: a.account.id,
                           amountPence: a.account.monthlyContributionPence || undefined,
                           paidBy: a.account.owner,

@@ -13,8 +13,8 @@ import { formatMonth, monthOf } from "@/domain/dates";
 import { formatPence } from "@/domain/money";
 import type { MatrixRow } from "@/domain/types";
 import { cn } from "@/lib/utils";
-import { useHousehold } from "@/mock/store";
 import { isOverBudget } from "@/server/calc";
+import { useHousehold } from "@/store/household-store";
 
 export default function BudgetsPage() {
   const { view, clock, matrix, dispatch } = useHousehold();

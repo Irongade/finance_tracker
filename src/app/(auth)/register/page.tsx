@@ -3,21 +3,35 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { PasswordInput } from "@/components/domain/password-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
   return (
     <form
       className="grid gap-5"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
+        setBusy(true);
+        setError(null);
+        const { error } = await authClient.signUp.email({ name, email, password });
+        setBusy(false);
+        if (error) {
+          setError(error.message ?? "Could not create the account.");
+          return;
+        }
         router.push("/onboarding");
+        router.refresh();
       }}
     >
       <div>
@@ -35,6 +49,7 @@ export default function RegisterPage() {
           onChange={(e) => setName(e.target.value)}
           placeholder="Ade"
           required
+          autoFocus
         />
       </div>
       <div className="grid gap-1.5">
@@ -50,18 +65,24 @@ export default function RegisterPage() {
       </div>
       <div className="grid gap-1.5">
         <Label htmlFor="password">Password</Label>
-        <Input
+        <PasswordInput
           id="password"
-          type="password"
           autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="At least 8 characters"
+          minLength={8}
+          required
         />
         <p className="text-[11.5px] text-ink-muted">Hashed with scrypt; sessions are 30-day rolling cookies.</p>
       </div>
-      <Button type="submit" size="lg">
-        Continue
+      {error ? (
+        <p className="text-[12.5px] font-medium text-brick" role="alert">
+          {error}
+        </p>
+      ) : null}
+      <Button type="submit" size="lg" disabled={busy}>
+        {busy ? "Creating…" : "Continue"}
       </Button>
       <p className="text-center text-[12.5px] text-ink-muted">
         Already set up?{" "}

@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatPence, formatShare } from "@/domain/money";
 import { splitMethodLabel } from "@/domain/sentences";
-import { newId, useHousehold } from "@/mock/store";
+import { newId, useHousehold } from "@/store/household-store";
 
 const HORIZONS = [6, 12, 24] as const;
 

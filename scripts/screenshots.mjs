@@ -42,6 +42,12 @@ for (const [name, viewport] of Object.entries(VIEWPORTS)) {
     hasTouch: name === "mobile",
   });
   const page = await context.newPage();
+  // real sign-in against the seeded database
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.getByLabel("Email").fill(process.env.SEED_USER1_EMAIL ?? "ade@example.com");
+  await page.getByLabel("Password", { exact: true }).fill(process.env.SEED_USER1_PASSWORD ?? "password123");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.waitForURL(`${BASE}/`);
   page.on("console", (msg) => {
     if (msg.type() === "error") errors.push(`[${name}] ${page.url()}: ${msg.text()}`);
   });

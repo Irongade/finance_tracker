@@ -8,5 +8,7 @@ export default defineConfig({
   test: {
     include: ["src/**/*.test.ts"],
     environment: "node",
+    env: { DATABASE_URL_TEST: process.env.DATABASE_URL_TEST ?? "postgresql://localhost:5432/finance_tracker_test" },
+    fileParallelism: false,
   },
 });

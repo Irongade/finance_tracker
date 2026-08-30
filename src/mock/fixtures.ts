@@ -64,8 +64,8 @@ export const seedHousehold: Household = {
   id: "household-1",
   name: "Ade & P",
   users: [
-    { id: ADE, name: "Ade", email: "ade@example.com" },
-    { id: P, name: "P", email: "p@example.com" },
+    { id: ADE, position: 1, name: "Ade", email: "ade@example.com" },
+    { id: P, position: 2, name: "P", email: "p@example.com" },
   ],
   settings: {
     splitMethod: "fifty_fifty",

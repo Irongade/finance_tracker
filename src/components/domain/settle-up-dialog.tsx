@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { formatPence } from "@/domain/money";
 import { settlementInputSchema } from "@/domain/schemas";
 import { cn } from "@/lib/utils";
-import { newId, useHousehold } from "@/mock/store";
+import { newId, useHousehold } from "@/store/household-store";
 
 /** Flow 3: confirm amount (pre-filled with the net) and payer, record the settlement. */
 export function SettleUpDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {

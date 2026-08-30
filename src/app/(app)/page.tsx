@@ -17,8 +17,8 @@ import { daysInMonth, formatMonth, monthOf, parseISODate } from "@/domain/dates"
 import { formatPence, formatPercent } from "@/domain/money";
 import { monthsOfCover, settleUpSentence } from "@/domain/sentences";
 import { cn } from "@/lib/utils";
-import { useHousehold } from "@/mock/store";
 import { LISA_PROPERTY_CAP_PENCE } from "@/server/calc";
+import { useHousehold } from "@/store/household-store";
 
 export default function DashboardPage() {
   const { view, users, household, clock } = useHousehold();

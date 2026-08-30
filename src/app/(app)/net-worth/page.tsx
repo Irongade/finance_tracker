@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatMonth, monthOf } from "@/domain/dates";
 import { formatPence } from "@/domain/money";
 import type { Owner } from "@/domain/types";
-import { newId, useHousehold } from "@/mock/store";
+import { newId, useHousehold } from "@/store/household-store";
 
 export default function NetWorthPage() {
   const { view, users, household, clock, dispatch } = useHousehold();

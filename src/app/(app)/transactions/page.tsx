@@ -14,8 +14,8 @@ import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { formatDayHeading, formatMonth, isSameMonth, monthOf } from "@/domain/dates";
 import type { Transaction } from "@/domain/types";
-import { useHousehold } from "@/mock/store";
 import { transactionType } from "@/server/calc";
+import { useHousehold } from "@/store/household-store";
 
 export default function TransactionsPage() {
   const { household, users, clock, dispatch, categoryById } = useHousehold();

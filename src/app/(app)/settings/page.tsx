@@ -1,10 +1,10 @@
 "use client";
 
-import { Archive, Copy, Download, Plus, RotateCcw } from "lucide-react";
+import { Archive, Download, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { TypeChip } from "@/components/domain/chips";
-import { ConfirmDialog } from "@/components/domain/confirm-dialog";
+import { InvitePartnerCard } from "@/components/domain/invite-partner-card";
 import { MoneyInput } from "@/components/domain/money-input";
 import { MoneyText } from "@/components/domain/money-text";
 import { PersonBadge } from "@/components/domain/person-badge";
@@ -16,11 +16,11 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { formatPence, formatShare } from "@/domain/money";
+import { formatShare } from "@/domain/money";
 import { splitMethodLabel } from "@/domain/sentences";
 import type { CategoryType, SplitMethod } from "@/domain/types";
 import { downloadCsv, toCsv } from "@/lib/csv";
-import { newId, useHousehold } from "@/mock/store";
+import { newId, useHousehold } from "@/store/household-store";
 
 const METHODS: SplitMethod[] = ["fifty_fifty", "proportional", "custom"];
 
@@ -29,8 +29,6 @@ export default function SettingsPage() {
   const s = household.settings;
   const [newCategory, setNewCategory] = useState("");
   const [newType, setNewType] = useState<CategoryType>("variable");
-  const [resetOpen, setResetOpen] = useState(false);
-  const inviteLink = "https://ade-and-p.example/invite/7f3a-demo-token";
 
   const usage = useMemo(() => {
     const m = new Map<string, number>();
@@ -301,51 +299,8 @@ export default function SettingsPage() {
           </div>
         </SectionCard>
 
-        <SectionCard
-          title="Invite your partner"
-          description="No public signup: one account creates the household and invites the other with a one-time link."
-        >
-          <div className="flex items-center gap-2">
-            <Input readOnly value={inviteLink} className="h-8 flex-1 text-[12px]" aria-label="Invite link" />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                navigator.clipboard?.writeText(inviteLink);
-                toast.success("Link copied", { description: "Valid once, for 48 hours (demo link)." });
-              }}
-            >
-              <Copy /> Copy
-            </Button>
-          </div>
-          <p className="mt-2 text-[12px] text-ink-muted">
-            Both accounts have identical permissions. Everything is scoped to this household.
-          </p>
-        </SectionCard>
-
-        <SectionCard className="md:col-span-2" title="Demo data">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[13px] text-ink-muted">
-              This mock-up runs on the workbook's August 2026 figures, in memory. Reload or reset to go back to them.
-            </p>
-            <Button variant="outline" onClick={() => setResetOpen(true)}>
-              <RotateCcw /> Reset demo data
-            </Button>
-          </div>
-        </SectionCard>
+        <InvitePartnerCard />
       </div>
-      <ConfirmDialog
-        open={resetOpen}
-        onOpenChange={setResetOpen}
-        title="Reset the demo data?"
-        description="Anything you've added in this session goes; the workbook's figures come back."
-        confirmLabel="Reset"
-        destructive
-        onConfirm={() => {
-          dispatch({ type: "reset" });
-          toast("Demo data reset", { description: formatPence(0) === "£0.00" ? "Back to August 2026." : "" });
-        }}
-      />
     </>
   );
 }

@@ -9,7 +9,7 @@ import { SnapshotForm } from "@/components/domain/snapshot-form";
 import { PageHeader } from "@/components/shell/page-header";
 import { formatMonth, monthOf } from "@/domain/dates";
 import { formatPence } from "@/domain/money";
-import { useHousehold } from "@/mock/store";
+import { useHousehold } from "@/store/household-store";
 
 export default function PotsPage() {
   const { view, household, clock, dispatch } = useHousehold();

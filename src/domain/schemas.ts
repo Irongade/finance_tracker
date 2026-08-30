@@ -107,3 +107,61 @@ export const settingsPatchSchema = z.object({
   lisaAnnualAllowancePence: z.number().int().min(0).optional(),
   mortgageMultiple: z.number().min(0).max(10).optional(),
 });
+
+// --- household / onboarding / catalogue bodies (section 6) ---------------------
+
+export const householdCreateSchema = z.object({
+  name: z.string().trim().min(1, "Name the household").max(80),
+  member1Name: z.string().trim().min(1, "Your name").max(40),
+  member2Name: z.string().trim().min(1, "Your partner's name").max(40),
+});
+export type HouseholdCreateInput = z.infer<typeof householdCreateSchema>;
+
+export const householdPatchSchema = z.object({
+  name: z.string().trim().min(1).max(80).optional(),
+  members: z
+    .array(z.object({ id: z.string().min(1), name: z.string().trim().min(1, "Name can't be empty").max(40) }))
+    .optional(),
+});
+
+export const pledgeInputSchema = z.object({
+  userId: z.string().min(1),
+  monthlyPence: z.number().int().min(0, "Pledges can't be negative"),
+});
+
+export const goalCreateSchema = goalInputSchema.extend({ pledges: z.array(pledgeInputSchema).optional() });
+
+export const archiveSchema = z.object({ archived: z.boolean() });
+
+export const monthSnapshotSchema = z.object({ month: isoMonth, values: z.record(z.string(), z.number().int().min(0)) });
+
+export const netWorthSnapshotSchema = z.object({ month: isoMonth, valuePence: z.number().int().optional() });
+
+export const variableBudgetSchema = z.object({ categoryId: z.string().min(1), monthlyPence: z.number().int().min(0) });
+
+export const categoryCreateSchema = z.object({
+  name: z.string().trim().min(1, "Name the category").max(40),
+  type: z.enum(["fixed", "variable", "transfer"]),
+});
+export const categoryPatchSchema = z.object({
+  name: z.string().trim().min(1).max(40).optional(),
+  type: z.enum(["fixed", "variable", "transfer"]).optional(),
+  archived: z.boolean().optional(),
+  sort: z.number().int().optional(),
+});
+
+export const incomeSourceSchema = z.object({
+  userId: z.string().min(1),
+  name: z.string().trim().min(1, "Name the source").max(60),
+  monthlyPence: z.number().int().min(0),
+});
+
+export const accountSchema = z.object({
+  name: z.string().trim().min(1, "Name the account").max(60),
+  owner: ownerSchema,
+  balancePence: z.number().int(),
+});
+
+export const investmentAccountPatchSchema = investmentAccountInputSchema
+  .partial()
+  .extend({ archived: z.boolean().optional() });

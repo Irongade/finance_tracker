@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { formatDate } from "@/domain/dates";
 import { cn } from "@/lib/utils";
-import { useHousehold } from "@/mock/store";
+import { useHousehold } from "@/store/household-store";
 import { isActive, NAV_ITEMS } from "./nav";
 import { UserMenu } from "./user-menu";
 
@@ -44,7 +44,7 @@ export function Sidebar() {
       </nav>
       <div className="border-t border-hairline p-3">
         <UserMenu />
-        <p className="mt-2 px-2.5 text-[11px] text-ink-muted">Demo data · today is {formatDate(clock.today)}</p>
+        <p className="mt-2 px-2.5 text-[11px] text-ink-muted">Today is {formatDate(clock.today)}</p>
       </div>
     </aside>
   );

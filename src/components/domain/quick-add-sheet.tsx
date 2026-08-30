@@ -28,7 +28,7 @@ import { type TransactionInput, transactionInputSchema } from "@/domain/schemas"
 import type { Owner, Transaction } from "@/domain/types";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
-import { newId, useHousehold } from "@/mock/store";
+import { newId, useHousehold } from "@/store/household-store";
 
 const NONE = "__none__";
 

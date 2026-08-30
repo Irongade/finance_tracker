@@ -29,11 +29,10 @@ import { Switch } from "@/components/ui/switch";
 import { formatPence } from "@/domain/money";
 import { goalInputSchema } from "@/domain/schemas";
 import type { Goal, GoalType } from "@/domain/types";
-import { CATEGORY } from "@/mock/fixtures";
-import { newId, useHousehold } from "@/mock/store";
+import { newId, useHousehold } from "@/store/household-store";
 
 export default function GoalsPage() {
-  const { view, users, household, dispatch } = useHousehold();
+  const { view, users, household, dispatch, transferCategoryId } = useHousehold();
   const { open } = useQuickAdd();
   const [adding, setAdding] = useState(false);
   const [archiving, setArchiving] = useState<Goal | null>(null);
@@ -88,7 +87,7 @@ export default function GoalsPage() {
               onLogTransfer={() =>
                 open({
                   description: `Transfer to ${g.goal.name}`,
-                  categoryId: CATEGORY.savingsTransfer,
+                  categoryId: transferCategoryId("goal"),
                   linkedGoalId: g.goal.id,
                   paidBy: { kind: "joint" },
                   isShared: false,

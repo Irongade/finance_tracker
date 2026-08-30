@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { formatMonth } from "@/domain/dates";
 import { formatPence } from "@/domain/money";
 import { cn } from "@/lib/utils";
-import { useHousehold } from "@/mock/store";
+import { useHousehold } from "@/store/household-store";
 
 const GOAL_COLOURS = [
   "var(--workbook-blue)",

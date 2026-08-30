@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { QuickAddProvider, useQuickAdd } from "@/components/domain/quick-add-context";
 import { QuickAddSheet } from "@/components/domain/quick-add-sheet";
 import { Button } from "@/components/ui/button";
-import { HouseholdProvider } from "@/mock/store";
+import { type HouseholdInitial, HouseholdProvider } from "@/store/household-store";
 import { BottomTabs } from "./bottom-tabs";
 import { Sidebar } from "./sidebar";
 import { UserMenu } from "./user-menu";
@@ -34,9 +34,9 @@ function DesktopQuickAdd() {
   );
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ initial, children }: { initial: HouseholdInitial; children: ReactNode }) {
   return (
-    <HouseholdProvider>
+    <HouseholdProvider initial={initial}>
       <QuickAddProvider>
         <div className="flex min-h-dvh">
           <Sidebar />

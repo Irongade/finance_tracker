@@ -1,22 +1,42 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+import { PasswordInput } from "@/components/domain/password-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("ade@example.com");
+  const params = useSearchParams();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
   return (
     <form
       className="grid gap-5"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        router.push("/");
+        setBusy(true);
+        setError(null);
+        const { error } = await authClient.signIn.email({ email, password });
+        setBusy(false);
+        if (error) {
+          setError(
+            error.status === 429
+              ? "Too many attempts. Wait a minute and try again."
+              : "Email or password didn't match.",
+          );
+          return;
+        }
+        const next = params.get("next");
+        router.push(next?.startsWith("/") ? next : "/");
+        router.refresh();
       }}
     >
       <div>
@@ -32,21 +52,26 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          autoFocus
         />
       </div>
       <div className="grid gap-1.5">
         <Label htmlFor="password">Password</Label>
-        <Input
+        <PasswordInput
           id="password"
-          type="password"
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
+          required
         />
       </div>
-      <Button type="submit" size="lg">
-        Sign in
+      {error ? (
+        <p className="text-[12.5px] font-medium text-brick" role="alert">
+          {error}
+        </p>
+      ) : null}
+      <Button type="submit" size="lg" disabled={busy}>
+        {busy ? "Signing in…" : "Sign in"}
       </Button>
       <p className="text-center text-[12.5px] text-ink-muted">
         First time here?{" "}
@@ -55,5 +80,13 @@ export default function LoginPage() {
         </Link>
       </p>
     </form>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
