@@ -16,7 +16,10 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx scripts/seed.ts",
     "db:reset": "tsx scripts/seed.ts --reset",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "db:migrate:prod": "DB_TARGET=prod drizzle-kit migrate",
+    "db:seed:prod": "DB_TARGET=prod tsx scripts/seed.ts",
+    "db:studio:prod": "DB_TARGET=prod drizzle-kit studio"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

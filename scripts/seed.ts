@@ -10,6 +10,13 @@ config({ path: [".env.local", ".env"] });
 
 async function main() {
   const reset = process.argv.includes("--reset");
+  const { resolveDatabaseUrl } = await import("@/server/db/target");
+  const { url, target } = resolveDatabaseUrl();
+  process.env.DATABASE_URL = url; // getDb() reads DATABASE_URL
+  if (target === "prod") {
+    if (reset) throw new Error("Refusing to --reset the production database. Do it by hand if you really mean it.");
+    console.log("seeding PRODUCTION (DATABASE_URL_PROD)");
+  }
   const [{ getDb }, { auth }, { getServices }, { parseWorkbook }, { sql }] = await Promise.all([
     import("@/server/db/client"),
     import("@/server/auth/auth"),

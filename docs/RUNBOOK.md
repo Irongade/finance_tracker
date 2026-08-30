@@ -5,9 +5,28 @@
 | | Database | App |
 |---|---|---|
 | Local | Postgres.app 18, `postgresql://localhost:5432/finance_tracker` (+ `finance_tracker_test`) | `pnpm dev` |
-| Production (planned) | Neon free tier, pooled URL in `DATABASE_URL` | Vercel hobby |
+| Production | Neon (eu-west-2), pooled URL as `DATABASE_URL` on Vercel; locally kept as `DATABASE_URL_PROD` | Vercel hobby |
 
-Secrets live in `.env.local` locally and in Vercel env vars in production: `DATABASE_URL`, `BETTER_AUTH_SECRET` (32+ random bytes), `BETTER_AUTH_URL` (the public origin).
+Secrets live in `.env.local` locally and in Vercel env vars in production: `DATABASE_URL`, `BETTER_AUTH_SECRET` (32+ random bytes; a different one from local), `BETTER_AUTH_URL` (the public origin). Never set `FIXED_TODAY` in production.
+
+### Local vs production
+
+| | Local | Production |
+|---|---|---|
+| App reads | `DATABASE_URL` (Postgres.app) via `pnpm dev` | `DATABASE_URL` (Neon pooled) set in Vercel |
+| Migrate | `pnpm db:migrate` | `pnpm db:migrate:prod` from your machine (uses `DATABASE_URL_PROD`, direct endpoint) |
+| Seed | `pnpm db:seed` / `pnpm db:reset` | `pnpm db:seed:prod` with real `SEED_USER*` values, or sign up in the deployed app and import the workbook in onboarding. `--reset` is refused for prod. |
+| Inspect | `pnpm db:studio` | `pnpm db:studio:prod` |
+| Tests | `pnpm test` (uses `DATABASE_URL_TEST`), `pnpm test:e2e` | never against prod |
+
+`DB_TARGET=prod` is the only switch; the app code never reads `DATABASE_URL_PROD`.
+
+### Deploying to Vercel
+
+1. `pnpm db:migrate:prod` (creates the tables on Neon; re-run after every new migration).
+2. In Vercel: import the project (GitHub) or `pnpm dlx vercel` from this folder; framework Next.js, Node 22, build `pnpm build`.
+3. Env vars: `DATABASE_URL` = Neon pooled URL, `BETTER_AUTH_SECRET` = fresh `openssl rand -base64 32`, `BETTER_AUTH_URL` = `https://<project>.vercel.app` (update if you add a domain).
+4. First visit `/register` creates the household; upload the workbook in onboarding; invite your partner from Settings.
 
 ## Migrations
 
