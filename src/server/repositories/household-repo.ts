@@ -172,7 +172,8 @@ export class HouseholdRepository {
           .from(s.incomeSources)
           .where(eq(s.incomeSources.householdId, hid))
           .orderBy(asc(s.incomeSources.createdAt)),
-      () => h.select().from(s.bills).where(eq(s.bills.householdId, hid)).orderBy(asc(s.bills.createdAt)),
+      () =>
+        h.select().from(s.bills).where(eq(s.bills.householdId, hid)).orderBy(asc(s.bills.sort), asc(s.bills.createdAt)),
       () =>
         h.select().from(s.goals).where(eq(s.goals.householdId, hid)).orderBy(asc(s.goals.sort), asc(s.goals.createdAt)),
       () => h.select().from(s.goalPledges).where(eq(s.goalPledges.householdId, hid)),

@@ -56,6 +56,7 @@ export type Action =
   | { type: "addBill"; bill: Bill }
   | { type: "updateBill"; bill: Bill }
   | { type: "archiveBill"; id: string }
+  | { type: "reorderBills"; ids: string[] }
   | { type: "upsertIncomeSource"; source: IncomeSource }
   | { type: "deleteIncomeSource"; id: string }
   | { type: "addDebt"; debt: Debt }
@@ -162,6 +163,12 @@ export function reducer(h: Household, a: Action): Household {
       return { ...h, bills: replaceById(h.bills, a.bill) };
     case "archiveBill":
       return { ...h, bills: h.bills.map((b) => (b.id === a.id ? { ...b, archived: true } : b)) };
+    case "reorderBills": {
+      const position = new Map(a.ids.map((id, i) => [id, i]));
+      const bills = h.bills.map((b) => (position.has(b.id) ? { ...b, sort: position.get(b.id) ?? b.sort } : b));
+      bills.sort((x, y) => x.sort - y.sort || x.name.localeCompare(y.name));
+      return { ...h, bills };
+    }
     case "upsertIncomeSource": {
       const exists = h.incomeSources.some((s) => s.id === a.source.id);
       return { ...h, incomeSources: exists ? replaceById(h.incomeSources, a.source) : [...h.incomeSources, a.source] };
@@ -287,6 +294,8 @@ export function actionToRequest(a: Action, before: Household): ApiRequest | null
       return { method: "PATCH", url: `/api/bills/${a.bill.id}`, body: billBody(a.bill) };
     case "archiveBill":
       return { method: "PATCH", url: `/api/bills/${a.id}`, body: { archived: true } };
+    case "reorderBills":
+      return { method: "PUT", url: "/api/bills/order", body: { ids: a.ids } };
     case "upsertIncomeSource": {
       const exists = before.incomeSources.some((s) => s.id === a.source.id);
       const body = { userId: a.source.userId, name: a.source.name, monthlyPence: a.source.monthlyPence };

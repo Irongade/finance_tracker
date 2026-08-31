@@ -15,6 +15,13 @@
       "when": 1788100241762,
       "tag": "0001_auth_account_issuer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788207412349,
+      "tag": "0002_bills_sort",
+      "breakpoints": true
     }
   ]
 }

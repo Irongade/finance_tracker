@@ -71,6 +71,8 @@ export interface Bill {
   /** 1..31, or null when the due date is not tracked (personal bills in the seed). */
   dueDay: number | null;
   owner: Owner;
+  /** manual ordering on the Bills page */
+  sort: number;
   notes: string | null;
   archived: boolean;
 }

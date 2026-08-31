@@ -12,7 +12,7 @@ export class BillRepository {
       .select()
       .from(s.bills)
       .where(eq(s.bills.householdId, householdId))
-      .orderBy(asc(s.bills.createdAt));
+      .orderBy(asc(s.bills.sort), asc(s.bills.createdAt));
     return rows.map(rowToBill);
   }
 
@@ -38,6 +38,16 @@ export class BillRepository {
       .where(and(eq(s.bills.id, bill.id), eq(s.bills.householdId, householdId)))
       .returning();
     return r ? rowToBill(r) : null;
+  }
+
+  /** Persists a drag-reorder: each id gets its index as the sort value. */
+  async updateSort(householdId: string, ids: string[], h: DbHandle = this.db): Promise<void> {
+    for (const [index, id] of ids.entries()) {
+      await h
+        .update(s.bills)
+        .set({ sort: index })
+        .where(and(eq(s.bills.id, id), eq(s.bills.householdId, householdId)));
+    }
   }
 
   async delete(householdId: string, id: string, h: DbHandle = this.db): Promise<boolean> {

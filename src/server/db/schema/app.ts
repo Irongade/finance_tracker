@@ -145,6 +145,8 @@ export const bills = pgTable(
     dueDay: integer(),
     owner: ownerKindEnum().notNull(),
     ownerMemberId: memberRef(),
+    /** manual ordering on the Bills page (drag to reorder) */
+    sort: integer().notNull().default(0),
     notes: text(),
     archived: boolean().notNull().default(false),
     ...timestamps,

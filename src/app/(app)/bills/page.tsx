@@ -80,6 +80,7 @@ export default function BillsPage() {
             bills={joint}
             users={users}
             onLogPayment={logPayment}
+            onReorder={(ids) => dispatch({ type: "reorderBills", ids })}
             onEdit={(b) => setEditing(b.bill)}
             totalLabel="Total joint bills"
             totalPence={view.bills.totalJointBillsPence}
@@ -90,7 +91,7 @@ export default function BillsPage() {
             debits you don't log just show as Due or OVERDUE; the budget is still right.
           </p>
         </SectionCard>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 md:items-start">
           {users.map((u) => (
             <SectionCard
               key={u.id}
@@ -107,6 +108,7 @@ export default function BillsPage() {
                 bills={personal(u.id)}
                 users={users}
                 onLogPayment={logPayment}
+                onReorder={(ids) => dispatch({ type: "reorderBills", ids })}
                 onEdit={(b) => setEditing(b.bill)}
                 totalLabel="Total personal bills"
                 totalPence={view.bills.personalBillsPence[u.id] ?? 0}
@@ -217,6 +219,7 @@ function BillDialog({
               }
               bills.push({
                 id: bills.length === 0 ? (bill?.id ?? newId("bill")) : newId("bill"),
+                sort: bill?.sort ?? household.bills.length + 1 + bills.length,
                 archived: false,
                 ...parsed.data,
               });

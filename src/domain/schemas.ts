@@ -166,6 +166,8 @@ export const investmentAccountPatchSchema = investmentAccountInputSchema
   .partial()
   .extend({ archived: z.boolean().optional() });
 
+export const reorderSchema = z.object({ ids: z.array(z.string().min(1)).min(1).max(200) });
+
 export const transactionBulkSchema = z.object({
   transactions: z.array(transactionInputSchema).min(1, "Nothing to import").max(2000, "At most 2,000 rows per import"),
 });

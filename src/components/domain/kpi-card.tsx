@@ -25,7 +25,7 @@ export function KpiCard({
       <p className="text-[12.5px] font-medium tracking-wide text-ink-muted">{label}</p>
       <div className="text-[28px] leading-none text-navy md:text-[30px]">{value}</div>
       {sub ? <div className="mt-1 text-[12.5px] text-ink-muted">{sub}</div> : null}
-      {action ? <div className="mt-2">{action}</div> : null}
+      {action ? <div className="mt-auto pt-2">{action}</div> : null}
     </div>
   );
 }

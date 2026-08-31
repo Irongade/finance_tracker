@@ -55,6 +55,7 @@ export const rowToBill = (b: Row<typeof s.bills>): Bill => ({
   monthlyPence: b.monthlyPence,
   dueDay: b.dueDay,
   owner: toOwner(b.owner, b.ownerMemberId),
+  sort: b.sort,
   notes: b.notes,
   archived: b.archived,
 });
@@ -69,6 +70,7 @@ export const billToRow = (householdId: string, b: Omit<Bill, "id">) => {
     dueDay: b.dueDay,
     owner: o.kind,
     ownerMemberId: o.memberId,
+    sort: b.sort,
     notes: b.notes,
     archived: b.archived,
   };

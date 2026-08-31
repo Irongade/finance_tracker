@@ -67,7 +67,9 @@ export class ImportService {
       }
 
       const bills = [];
+      let billSort = 0;
       for (const b of data.bills) {
+        billSort += 1;
         bills.push(
           await r.bills.insert(
             householdId,
@@ -77,6 +79,7 @@ export class ImportService {
               monthlyPence: b.monthlyPence,
               dueDay: b.dueDay,
               owner: memberFor(b.owner),
+              sort: billSort,
               notes: b.notes,
               archived: false,
             },
