@@ -47,7 +47,7 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" description="Change things here once; every other page reads from here." />
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 md:items-start">
         <SectionCard title="Names">
           <div className="grid gap-3">
             <div className="grid gap-1.5">

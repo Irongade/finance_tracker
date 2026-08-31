@@ -56,7 +56,7 @@ export default function MyMoneyPage() {
         month.
       </LedgerSentence>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 md:items-start">
         <SectionCard
           title="Income"
           description="Monthly take-home equivalents"
