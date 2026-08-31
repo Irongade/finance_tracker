@@ -20,6 +20,8 @@ import type { GoalView, User } from "@/domain/types";
 
 export interface GoalCardProps {
   goal: GoalView;
+  /** rendered next to the title when the page enables drag-reordering */
+  dragHandle?: React.ReactNode;
   users: [User, User];
   lisaAnnualAllowancePence: number;
   onPledgeChange: (userId: string, monthlyPence: number) => void;
@@ -31,6 +33,7 @@ export interface GoalCardProps {
 
 export function GoalCard({
   goal,
+  dragHandle,
   users,
   lisaAnnualAllowancePence,
   onPledgeChange,
@@ -46,6 +49,7 @@ export function GoalCard({
       <header className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
+            {dragHandle}
             <h3 className="text-[16px] font-semibold leading-6 text-navy">{g.name}</h3>
             {g.type === "lisa" ? <Chip tone="info">LISA</Chip> : null}
             {g.isEmergencyFund ? (

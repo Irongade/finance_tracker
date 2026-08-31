@@ -30,12 +30,10 @@ export function proxy(req: NextRequest) {
     url.search = pathname !== "/" ? `?next=${encodeURIComponent(pathname)}` : "";
     return NextResponse.redirect(url);
   }
-  if (signedIn && (pathname === "/login" || pathname === "/register")) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/";
-    url.search = "";
-    return NextResponse.redirect(url);
-  }
+  // Never bounce visitors off /login for merely having a session cookie: after a
+  // database reset the cookie is stale but present, and the app layout (which
+  // checks the real session) sends them back here - an infinite redirect loop.
+  // Signing in again simply overwrites the stale cookie.
   return NextResponse.next();
 }
 

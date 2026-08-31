@@ -15,6 +15,7 @@ import {
   rowToPotSnapshot,
   rowToSettlement,
   rowToTransaction,
+  toOwner,
 } from "./mappers";
 
 type Thunk<T> = () => Promise<T>;
@@ -252,7 +253,11 @@ export class HouseholdRepository {
       debts: debts.map(rowToDebt),
       investmentAccounts: investmentAccounts.map(rowToInvestmentAccount),
       investmentSnapshots: investmentSnapshots.map(rowToInvestmentSnapshot),
-      variableBudgets: variableBudgets.map((v) => ({ categoryId: v.categoryId, monthlyPence: v.monthlyPence })),
+      variableBudgets: variableBudgets.map((v) => ({
+        categoryId: v.categoryId,
+        owner: toOwner(v.owner, v.ownerMemberId),
+        monthlyPence: v.monthlyPence,
+      })),
     };
   }
 }

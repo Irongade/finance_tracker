@@ -24,10 +24,13 @@ import type {
   InvestmentAccount,
   ISOMonth,
   Matrix,
+  MatrixLens,
+  Owner,
   Settings,
   Settlement,
   Transaction,
   User,
+  VariableBudget,
 } from "@/domain/types";
 import { type ApiRequest, api } from "@/lib/api";
 import { computeBudgetMatrix, computeHouseholdView } from "@/server/calc";
@@ -52,10 +55,11 @@ export type Action =
   | { type: "updateGoal"; goal: Goal }
   | { type: "archiveGoal"; id: string }
   | { type: "setEmergencyFund"; id: string }
-  | { type: "updateVariableBudget"; categoryId: string; monthlyPence: number }
+  | { type: "reorderGoals"; ids: string[] }
+  | { type: "updateVariableBudget"; categoryId: string; owner: Owner; monthlyPence: number }
   | { type: "addBill"; bill: Bill }
   | { type: "updateBill"; bill: Bill }
-  | { type: "archiveBill"; id: string }
+  | { type: "setBillArchived"; id: string; archived: boolean }
   | { type: "reorderBills"; ids: string[] }
   | { type: "upsertIncomeSource"; source: IncomeSource }
   | { type: "deleteIncomeSource"; id: string }
@@ -148,21 +152,32 @@ export function reducer(h: Household, a: Action): Household {
       return { ...h, goals: h.goals.map((g) => (g.id === a.id ? { ...g, archived: true } : g)) };
     case "setEmergencyFund":
       return { ...h, goals: h.goals.map((g) => ({ ...g, isEmergencyFund: g.id === a.id })) };
+    case "reorderGoals": {
+      const position = new Map(a.ids.map((id, i) => [id, i]));
+      const goals = h.goals.map((g) => (position.has(g.id) ? { ...g, sort: position.get(g.id) ?? g.sort } : g));
+      goals.sort((x, y) => x.sort - y.sort || x.name.localeCompare(y.name));
+      return { ...h, goals };
+    }
     case "updateVariableBudget": {
-      const exists = h.variableBudgets.some((v) => v.categoryId === a.categoryId);
+      const same = (v: VariableBudget) =>
+        v.categoryId === a.categoryId &&
+        (v.owner.kind === "joint"
+          ? a.owner.kind === "joint"
+          : a.owner.kind === "user" && a.owner.userId === v.owner.userId);
+      const exists = h.variableBudgets.some(same);
       return {
         ...h,
         variableBudgets: exists
-          ? h.variableBudgets.map((v) => (v.categoryId === a.categoryId ? { ...v, monthlyPence: a.monthlyPence } : v))
-          : [...h.variableBudgets, { categoryId: a.categoryId, monthlyPence: a.monthlyPence }],
+          ? h.variableBudgets.map((v) => (same(v) ? { ...v, monthlyPence: a.monthlyPence } : v))
+          : [...h.variableBudgets, { categoryId: a.categoryId, owner: a.owner, monthlyPence: a.monthlyPence }],
       };
     }
     case "addBill":
       return { ...h, bills: [...h.bills, a.bill] };
     case "updateBill":
       return { ...h, bills: replaceById(h.bills, a.bill) };
-    case "archiveBill":
-      return { ...h, bills: h.bills.map((b) => (b.id === a.id ? { ...b, archived: true } : b)) };
+    case "setBillArchived":
+      return { ...h, bills: h.bills.map((b) => (b.id === a.id ? { ...b, archived: a.archived } : b)) };
     case "reorderBills": {
       const position = new Map(a.ids.map((id, i) => [id, i]));
       const bills = h.bills.map((b) => (position.has(b.id) ? { ...b, sort: position.get(b.id) ?? b.sort } : b));
@@ -282,18 +297,20 @@ export function actionToRequest(a: Action, before: Household): ApiRequest | null
       return { method: "PATCH", url: `/api/goals/${a.id}`, body: { archived: true } };
     case "setEmergencyFund":
       return { method: "POST", url: `/api/goals/${a.id}/emergency-fund` };
+    case "reorderGoals":
+      return { method: "PUT", url: "/api/goals/order", body: { ids: a.ids } };
     case "updateVariableBudget":
       return {
         method: "PUT",
         url: "/api/variable-budgets",
-        body: { categoryId: a.categoryId, monthlyPence: a.monthlyPence },
+        body: { categoryId: a.categoryId, owner: a.owner, monthlyPence: a.monthlyPence },
       };
     case "addBill":
       return { method: "POST", url: "/api/bills", body: billBody(a.bill) };
     case "updateBill":
       return { method: "PATCH", url: `/api/bills/${a.bill.id}`, body: billBody(a.bill) };
-    case "archiveBill":
-      return { method: "PATCH", url: `/api/bills/${a.id}`, body: { archived: true } };
+    case "setBillArchived":
+      return { method: "PATCH", url: `/api/bills/${a.id}`, body: { archived: a.archived } };
     case "reorderBills":
       return { method: "PUT", url: "/api/bills/order", body: { ids: a.ids } };
     case "upsertIncomeSource": {
@@ -338,7 +355,7 @@ function debounceKey(a: Action): string | null {
     case "updatePledge":
       return `pledge:${a.goalId}:${a.userId}`;
     case "updateVariableBudget":
-      return `budget:${a.categoryId}`;
+      return `budget:${a.categoryId}:${a.owner.kind === "joint" ? "joint" : a.owner.userId}`;
     case "updateAccount":
       return `account:${a.account.id}`;
     case "upsertIncomeSource":
@@ -375,7 +392,7 @@ export interface HouseholdContextValue {
   currentUserId: string;
   /** Applies optimistically at once; the promise resolves true when the server accepted (debounced inline edits resolve immediately). */
   dispatch: (a: Action) => Promise<boolean>;
-  matrix: (startMonth: ISOMonth) => Matrix;
+  matrix: (startMonth: ISOMonth, lens?: MatrixLens) => Matrix;
   userName: (id: string) => string;
   categoryName: (id: string) => string;
   categoryById: (id: string) => Category | undefined;
@@ -483,7 +500,7 @@ export function HouseholdProvider({ initial, children }: { initial: HouseholdIni
   }, [flush, refresh]);
 
   const matrix = useCallback(
-    (startMonth: ISOMonth) => computeBudgetMatrix(household, startMonth, clock),
+    (startMonth: ISOMonth, lens: MatrixLens = "all") => computeBudgetMatrix(household, startMonth, clock, lens),
     [household, clock],
   );
   const userName = useCallback(

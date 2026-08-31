@@ -11,7 +11,7 @@ import type {
   PersonSnapshot,
   Shares,
 } from "@/domain/types";
-import { totalVariableBudget } from "./budgets";
+import { jointVariableBudget, personalVariableBudget } from "./budgets";
 import { isUser, transactionType } from "./classify";
 import { incomeFor, shareFor } from "./shares";
 
@@ -30,8 +30,9 @@ export function computePerson(h: Household, userId: string, clock: Clock, inp: P
   const incomePence = incomeFor(h, userId);
   const personalBillsPence = inp.bills.personalBillsPence[userId] ?? 0;
   const shareOfJointBillsPence = share * inp.bills.totalJointBillsPence;
-  const shareOfVariableBudgetPence = share * totalVariableBudget(h);
+  const shareOfVariableBudgetPence = share * jointVariableBudget(h);
   const shareOfJointPence = shareOfJointBillsPence + shareOfVariableBudgetPence;
+  const ownVariableBudgetPence = personalVariableBudget(h, userId);
   const pledgesPence = inp.goals.pledgesByUser[userId] ?? 0;
   const debtPaymentsPence = inp.debts.paymentsByUser[userId] ?? 0;
 
@@ -43,7 +44,13 @@ export function computePerson(h: Household, userId: string, clock: Clock, inp: P
   }
 
   const leftoverPence =
-    incomePence - personalBillsPence - shareOfJointPence - pledgesPence - debtPaymentsPence - investPence;
+    incomePence -
+    personalBillsPence -
+    shareOfJointPence -
+    ownVariableBudgetPence -
+    pledgesPence -
+    debtPaymentsPence -
+    investPence;
 
   const month = monthOf(clock.today);
   let spentMtdPence = 0;
@@ -66,6 +73,7 @@ export function computePerson(h: Household, userId: string, clock: Clock, inp: P
     shareOfJointBillsPence,
     shareOfVariableBudgetPence,
     shareOfJointPence,
+    ownVariableBudgetPence,
     pledgesPence,
     debtPaymentsPence,
     investPence,

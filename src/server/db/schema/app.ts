@@ -365,8 +365,18 @@ export const variableBudgets = pgTable(
     categoryId: uuid()
       .notNull()
       .references(() => categories.id, { onDelete: "cascade" }),
+    /** joint budgets split by the household rule; personal ones come off that person's leftover */
+    owner: ownerKindEnum().notNull().default("joint"),
+    ownerMemberId: memberRef(),
     monthlyPence: pence().notNull().default(0),
     ...timestamps,
   },
-  (t) => [uniqueIndex("variable_budgets_category_idx").on(t.categoryId)],
+  (t) => [
+    uniqueIndex("variable_budgets_joint_idx").on(t.categoryId).where(sql`${t.owner} = 'joint'`),
+    uniqueIndex("variable_budgets_member_idx").on(t.categoryId, t.ownerMemberId).where(sql`${t.owner} = 'user'`),
+    check(
+      "variable_budgets_owner_check",
+      sql`(${t.owner} = 'joint' and ${t.ownerMemberId} is null) or (${t.owner} = 'user' and ${t.ownerMemberId} is not null)`,
+    ),
+  ],
 );

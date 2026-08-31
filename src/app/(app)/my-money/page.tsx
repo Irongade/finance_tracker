@@ -164,6 +164,12 @@ export default function MyMoneyPage() {
             emphasis
             value={<MoneyText pence={person.shareOfJointPence} style="whole" className="text-[15px]" />}
           />
+          {person.ownVariableBudgetPence > 0 ? (
+            <LineItem
+              label="Your own variable budgets (set on Budgets)"
+              value={<MoneyText pence={person.ownVariableBudgetPence} style="whole" />}
+            />
+          ) : null}
         </SectionCard>
 
         <SectionCard
@@ -264,6 +270,10 @@ export default function MyMoneyPage() {
           <LineItem
             label="less: share of joint costs"
             value={<MoneyText pence={-person.shareOfJointPence} style="whole" />}
+          />
+          <LineItem
+            label="less: your own variable budgets"
+            value={<MoneyText pence={-person.ownVariableBudgetPence} style="whole" />}
           />
           <LineItem label="less: goal contributions" value={<MoneyText pence={-person.pledgesPence} style="whole" />} />
           <LineItem label="less: debt payments" value={<MoneyText pence={-person.debtPaymentsPence} style="whole" />} />

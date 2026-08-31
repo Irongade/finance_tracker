@@ -62,6 +62,17 @@ export class GoalService {
     });
   }
 
+  /** Drag-reorder from the Goals page: ids arrive in their new visual order. */
+  async reorder(householdId: string, ids: string[]): Promise<Mutation<null>> {
+    const h = await loadHousehold(this.deps, householdId);
+    const known = new Set(h.goals.map((g) => g.id));
+    if (!ids.every((id) => known.has(id))) throw new DomainRuleError("Unknown goal in the new order", "ids");
+    return mutate(this.deps, householdId, async (tx) => {
+      await this.deps.repos.goals.updateSort(householdId, ids, tx);
+      return null;
+    });
+  }
+
   async setEmergencyFund(householdId: string, goalId: string): Promise<Mutation<null>> {
     return mutate(this.deps, householdId, async (tx) => {
       const goal = await this.deps.repos.goals.findById(householdId, goalId, tx);

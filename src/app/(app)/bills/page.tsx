@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { BillsTable } from "@/components/domain/bills-table";
 import { Figure, LedgerSentence } from "@/components/domain/ledger-sentence";
 import { MoneyInput } from "@/components/domain/money-input";
+import { MoneyText } from "@/components/domain/money-text";
 import { PersonBadge } from "@/components/domain/person-badge";
 import { useQuickAdd } from "@/components/domain/quick-add-context";
 import { SectionCard } from "@/components/domain/section-card";
@@ -47,6 +48,7 @@ export default function BillsPage() {
       linkedBillId: b.bill.id,
     });
 
+  const archivedBills = household.bills.filter((b) => b.archived);
   const overdue = view.bills.overdueCount;
 
   return (
@@ -119,6 +121,35 @@ export default function BillsPage() {
         </div>
       </div>
 
+      {archivedBills.length > 0 ? (
+        <SectionCard
+          className="mt-4"
+          title={`Archived bills (${archivedBills.length})`}
+          description="Out of the budgets and status tracking; history kept. Restore to bring one back."
+          flush
+        >
+          <ul className="divide-y divide-hairline">
+            {archivedBills.map((b) => (
+              <li key={b.id} className="flex items-center gap-3 px-5 py-2.5 md:px-6">
+                <PersonBadge owner={b.owner} users={users} size="xs" />
+                <span className="min-w-0 flex-1 truncate text-[13.5px] text-ink-muted">{b.name}</span>
+                <MoneyText pence={b.monthlyPence} style="whole" className="text-ink-muted" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    const ok = await dispatch({ type: "setBillArchived", id: b.id, archived: false });
+                    if (ok) toast.success("Bill restored", { description: b.name });
+                  }}
+                >
+                  Restore
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </SectionCard>
+      ) : null}
+
       <BillDialog
         key={editing === null ? "closed" : editing === "new" ? "new" : editing.id}
         open={editing !== null}
@@ -138,7 +169,7 @@ export default function BillsPage() {
           setEditing(null);
         }}
         onArchive={(id) => {
-          dispatch({ type: "archiveBill", id });
+          void dispatch({ type: "setBillArchived", id, archived: true });
           toast("Bill archived", { description: "History is kept; it no longer counts in budgets." });
           setEditing(null);
         }}

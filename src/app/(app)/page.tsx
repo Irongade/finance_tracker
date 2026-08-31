@@ -158,6 +158,7 @@ export default function DashboardPage() {
                   ["Income", ade.incomePence, p.incomePence],
                   ["Personal bills", ade.personalBillsPence, p.personalBillsPence],
                   ["Share of joint costs", ade.shareOfJointPence, p.shareOfJointPence],
+                  ["Own variable budgets", ade.ownVariableBudgetPence, p.ownVariableBudgetPence],
                   ["Goal contributions", ade.pledgesPence, p.pledgesPence],
                   ["Investment contributions", ade.investPence, p.investPence],
                   ["Debt payments", ade.debtPaymentsPence, p.debtPaymentsPence],

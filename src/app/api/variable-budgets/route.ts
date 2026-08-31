@@ -10,6 +10,6 @@ export const GET = handler(async (req) => {
 /** Upsert one category's monthly budget (fixed budgets are derived from the bills). */
 export const PUT = handler(async (req) => {
   const ctx = await requireContext(req);
-  const { categoryId, monthlyPence } = await parseBody(req, variableBudgetSchema);
-  return json(await ctx.services.budgets.setVariableBudget(ctx.householdId, categoryId, monthlyPence));
+  const { categoryId, owner, monthlyPence } = await parseBody(req, variableBudgetSchema);
+  return json(await ctx.services.budgets.setVariableBudget(ctx.householdId, categoryId, owner, monthlyPence));
 });

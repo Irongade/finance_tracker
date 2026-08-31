@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { formatDate } from "@/domain/dates";
+import { useNavOrder } from "@/hooks/use-nav-order";
 import { cn } from "@/lib/utils";
 import { useHousehold } from "@/store/household-store";
-import { isActive, NAV_ITEMS } from "./nav";
+import { isActive } from "./nav";
 import { UserMenu } from "./user-menu";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { clock, household } = useHousehold();
   const brand = household.name.trim() || "Finance Tracker";
+  const { items } = useNavOrder();
   return (
     <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-hairline bg-surface md:flex">
       <div className="px-5 pt-6 pb-4">
@@ -22,7 +24,7 @@ export function Sidebar() {
       </div>
       <nav aria-label="Main" className="flex-1 overflow-y-auto px-3">
         <ul className="flex flex-col gap-0.5">
-          {NAV_ITEMS.map((item) => {
+          {items.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
             return (

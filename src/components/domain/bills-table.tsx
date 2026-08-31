@@ -96,7 +96,7 @@ function SortableTr({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
         b.status === "overdue" && "bg-blush/40 hover:bg-blush/60",
-        isDragging && "relative z-10 bg-surface shadow-md",
+        isDragging && "relative z-10 bg-surface opacity-90 shadow-lg",
       )}
     >
       {draggable ? (
@@ -134,8 +134,13 @@ function SortableTr({
       </TableCell>
       <TableCell className="text-right">
         {b.status !== "paid" ? (
-          <Button variant="outline" size="sm" onClick={() => onLogPayment(b)}>
-            Log payment
+          <Button
+            variant="outline"
+            size="sm"
+            aria-label={`Log payment for ${b.bill.name}`}
+            onClick={() => onLogPayment(b)}
+          >
+            Log
           </Button>
         ) : null}
       </TableCell>
@@ -169,7 +174,7 @@ function SortableLi({
       className={cn(
         "flex items-center gap-3 px-4 py-3",
         b.status === "overdue" && "bg-blush/40",
-        isDragging && "relative z-10 bg-surface shadow-md",
+        isDragging && "relative z-10 bg-surface opacity-90 shadow-lg",
       )}
     >
       {draggable ? <DragHandle attributes={attributes} listeners={listeners} name={b.bill.name} /> : null}
@@ -195,8 +200,14 @@ function SortableLi({
         <div className="mt-1.5 flex items-center gap-2">
           <BillStatusChip status={b.status} />
           {b.status !== "paid" ? (
-            <Button variant="link" size="xs" className="h-5 px-0" onClick={() => onLogPayment(b)}>
-              Log payment
+            <Button
+              variant="link"
+              size="xs"
+              className="h-5 px-0"
+              aria-label={`Log payment for ${b.bill.name}`}
+              onClick={() => onLogPayment(b)}
+            >
+              Log
             </Button>
           ) : null}
         </div>
@@ -222,7 +233,13 @@ export function BillsTable({
   const ids = sorted.map((b) => b.bill.id);
   const draggable = Boolean(onReorder) && sorted.length > 1;
 
-  const sensors = useSensors(
+  // one drag context per visible variant: registering the same ids twice (hidden
+  // desktop table + mobile list) breaks the slide-out-of-the-way animation
+  const desktopSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  const mobileSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -249,79 +266,88 @@ export function BillsTable({
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-      onDragEnd={handleDragEnd}
-    >
+    <>
       {/* desktop */}
       <div className="hidden md:block">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              {draggable ? <TableHead className="w-8" aria-label="Reorder" /> : null}
-              <TableHead>Item</TableHead>
-              <TableHead>Category</TableHead>
-              {showOwner ? <TableHead>Owner</TableHead> : null}
-              <TableHead className="text-right">£/mo</TableHead>
-              <TableHead>Due</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-0" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-              {sorted.map((b) => (
-                <SortableTr
-                  key={b.bill.id}
-                  b={b}
-                  users={users}
-                  showOwner={showOwner}
-                  draggable={draggable}
-                  onLogPayment={onLogPayment}
-                  onEdit={onEdit}
-                />
-              ))}
-            </SortableContext>
-          </TableBody>
-          {totalLabel !== undefined && totalPence !== undefined ? (
-            <TableFooter>
+        <DndContext
+          sensors={desktopSensors}
+          collisionDetection={closestCenter}
+          modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+          onDragEnd={handleDragEnd}
+        >
+          <Table>
+            <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={(showOwner ? 3 : 2) + (draggable ? 1 : 0)} className="font-semibold text-navy">
-                  {totalLabel}
-                </TableCell>
-                <TableCell className="text-right">
-                  <MoneyText pence={totalPence} style="whole" className="text-navy" />
-                </TableCell>
-                <TableCell colSpan={3} />
+                {draggable ? <TableHead className="w-8" aria-label="Reorder" /> : null}
+                <TableHead>Item</TableHead>
+                <TableHead>Category</TableHead>
+                {showOwner ? <TableHead>Owner</TableHead> : null}
+                <TableHead className="text-right">£/mo</TableHead>
+                <TableHead>Due</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-0" />
               </TableRow>
-            </TableFooter>
-          ) : null}
-        </Table>
+            </TableHeader>
+            <TableBody>
+              <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+                {sorted.map((b) => (
+                  <SortableTr
+                    key={b.bill.id}
+                    b={b}
+                    users={users}
+                    showOwner={showOwner}
+                    draggable={draggable}
+                    onLogPayment={onLogPayment}
+                    onEdit={onEdit}
+                  />
+                ))}
+              </SortableContext>
+            </TableBody>
+            {totalLabel !== undefined && totalPence !== undefined ? (
+              <TableFooter>
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={(showOwner ? 3 : 2) + (draggable ? 1 : 0)} className="font-semibold text-navy">
+                    {totalLabel}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <MoneyText pence={totalPence} style="whole" className="text-navy" />
+                  </TableCell>
+                  <TableCell colSpan={3} />
+                </TableRow>
+              </TableFooter>
+            ) : null}
+          </Table>
+        </DndContext>
       </div>
       {/* mobile */}
-      <ul className="divide-y divide-hairline md:hidden">
-        <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-          {sorted.map((b) => (
-            <SortableLi
-              key={b.bill.id}
-              b={b}
-              users={users}
-              showOwner={showOwner}
-              draggable={draggable}
-              onLogPayment={onLogPayment}
-              onEdit={onEdit}
-            />
-          ))}
-        </SortableContext>
-        {totalLabel !== undefined && totalPence !== undefined ? (
-          <li className="flex items-center justify-between px-4 py-3 font-semibold text-navy">
-            <span className="text-[13px]">{totalLabel}</span>
-            <MoneyText pence={totalPence} style="whole" className="text-[14px]" />
-          </li>
-        ) : null}
-      </ul>
-    </DndContext>
+      <DndContext
+        sensors={mobileSensors}
+        collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+        onDragEnd={handleDragEnd}
+      >
+        <ul className="divide-y divide-hairline md:hidden">
+          <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+            {sorted.map((b) => (
+              <SortableLi
+                key={b.bill.id}
+                b={b}
+                users={users}
+                showOwner={showOwner}
+                draggable={draggable}
+                onLogPayment={onLogPayment}
+                onEdit={onEdit}
+              />
+            ))}
+          </SortableContext>
+          {totalLabel !== undefined && totalPence !== undefined ? (
+            <li className="flex items-center justify-between px-4 py-3 font-semibold text-navy">
+              <span className="text-[13px]">{totalLabel}</span>
+              <MoneyText pence={totalPence} style="whole" className="text-[14px]" />
+            </li>
+          ) : null}
+        </ul>
+      </DndContext>
+    </>
   );
 }

@@ -9,6 +9,7 @@ import { TypeChip } from "@/components/domain/chips";
 import { InvitePartnerCard } from "@/components/domain/invite-partner-card";
 import { MoneyInput } from "@/components/domain/money-input";
 import { MoneyText } from "@/components/domain/money-text";
+import { NavOrderCard } from "@/components/domain/nav-order-card";
 import { PersonBadge } from "@/components/domain/person-badge";
 import { LineItem, SectionCard } from "@/components/domain/section-card";
 import { SwapLoginsCard } from "@/components/domain/swap-logins-card";
@@ -30,7 +31,9 @@ const METHODS: SplitMethod[] = ["fifty_fifty", "proportional", "custom"];
 
 function SettingsContent() {
   const params = useSearchParams();
-  const [tab, setTab] = useState(params.get("tab") === "categories" ? "categories" : "general");
+  const [tab, setTab] = useState(
+    ["categories", "navigation"].includes(params.get("tab") ?? "") ? (params.get("tab") as string) : "general",
+  );
   const { household, view, users, dispatch } = useHousehold();
   const s0 = household.settings;
   const [newCategory, setNewCategory] = useState("");
@@ -55,6 +58,7 @@ function SettingsContent() {
         <TabsList className="mb-4">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="navigation">Navigation</TabsTrigger>
         </TabsList>
         <TabsContent value="general">
           <div className="grid gap-4 md:grid-cols-2 md:items-start">
@@ -358,6 +362,11 @@ function SettingsContent() {
               </Button>
             </form>
           </SectionCard>
+        </TabsContent>
+        <TabsContent value="navigation">
+          <div className="max-w-xl">
+            <NavOrderCard />
+          </div>
         </TabsContent>
       </Tabs>
     </>

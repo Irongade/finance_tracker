@@ -1,6 +1,25 @@
 "use client";
 
-import { Plus, Target } from "lucide-react";
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { restrictToParentElement } from "@dnd-kit/modifiers";
+import {
+  arrayMove,
+  rectSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, Plus, Target } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/domain/confirm-dialog";
@@ -37,6 +56,20 @@ export default function GoalsPage() {
   const [goalDialog, setGoalDialog] = useState<"new" | Goal | null>(null);
   const [archiving, setArchiving] = useState<Goal | null>(null);
   const goals = view.goals.goals;
+  const goalIds = goals.map((g) => g.goal.id);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  const onGoalDragEnd = (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    void dispatch({
+      type: "reorderGoals",
+      ids: arrayMove(goalIds, goalIds.indexOf(String(active.id)), goalIds.indexOf(String(over.id))),
+    });
+  };
 
   return (
     <>
@@ -69,34 +102,47 @@ export default function GoalsPage() {
           />
         </SectionCard>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {goals.map((g) => (
-            <GoalCard
-              key={g.goal.id}
-              goal={g}
-              users={users}
-              lisaAnnualAllowancePence={household.settings.lisaAnnualAllowancePence}
-              onPledgeChange={(userId, monthlyPence) =>
-                dispatch({ type: "updatePledge", goalId: g.goal.id, userId, monthlyPence })
-              }
-              onEdit={() => setGoalDialog(g.goal)}
-              onArchive={() => setArchiving(g.goal)}
-              onSetEmergency={() => {
-                dispatch({ type: "setEmergencyFund", id: g.goal.id });
-                toast.success(`${g.goal.name} is now the emergency fund`);
-              }}
-              onLogTransfer={() =>
-                open({
-                  description: `Transfer to ${g.goal.name}`,
-                  categoryId: transferCategoryId("goal"),
-                  linkedGoalId: g.goal.id,
-                  paidBy: { kind: "joint" },
-                  isShared: false,
-                })
-              }
-            />
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          modifiers={[restrictToParentElement]}
+          onDragEnd={onGoalDragEnd}
+        >
+          <SortableContext items={goalIds} strategy={rectSortingStrategy}>
+            <div className="grid gap-4 md:grid-cols-2">
+              {goals.map((g) => (
+                <SortableGoalCard key={g.goal.id} id={g.goal.id}>
+                  {(handle) => (
+                    <GoalCard
+                      dragHandle={goals.length > 1 ? handle : undefined}
+                      goal={g}
+                      users={users}
+                      lisaAnnualAllowancePence={household.settings.lisaAnnualAllowancePence}
+                      onPledgeChange={(userId, monthlyPence) =>
+                        dispatch({ type: "updatePledge", goalId: g.goal.id, userId, monthlyPence })
+                      }
+                      onEdit={() => setGoalDialog(g.goal)}
+                      onArchive={() => setArchiving(g.goal)}
+                      onSetEmergency={() => {
+                        dispatch({ type: "setEmergencyFund", id: g.goal.id });
+                        toast.success(`${g.goal.name} is now the emergency fund`);
+                      }}
+                      onLogTransfer={() =>
+                        open({
+                          description: `Transfer to ${g.goal.name}`,
+                          categoryId: transferCategoryId("goal"),
+                          linkedGoalId: g.goal.id,
+                          paidBy: { kind: "joint" },
+                          isShared: false,
+                        })
+                      }
+                    />
+                  )}
+                </SortableGoalCard>
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {goals.length > 0 ? (
@@ -161,6 +207,30 @@ export default function GoalsPage() {
         }}
       />
     </>
+  );
+}
+
+function SortableGoalCard({ id, children }: { id: string; children: (handle: React.ReactNode) => React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const handle = (
+    <button
+      type="button"
+      {...attributes}
+      {...listeners}
+      aria-label="Reorder goal"
+      className="inline-flex size-6 cursor-grab touch-none items-center justify-center rounded text-ink-muted/60 hover:bg-row-hover hover:text-ink-muted focus-visible:ring-3 focus-visible:ring-ring/50 active:cursor-grabbing"
+    >
+      <GripVertical className="size-4" aria-hidden />
+    </button>
+  );
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={isDragging ? "relative z-10 opacity-90" : undefined}
+    >
+      {children(handle)}
+    </div>
   );
 }
 

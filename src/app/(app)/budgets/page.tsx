@@ -8,27 +8,37 @@ import { MatrixTable } from "@/components/domain/matrix-table";
 import { MoneyInput } from "@/components/domain/money-input";
 import { MoneyText } from "@/components/domain/money-text";
 import { MonthSwitcher } from "@/components/domain/month-switcher";
+import { PersonBadge } from "@/components/domain/person-badge";
 import { ProgressBar } from "@/components/domain/progress-bar";
 import { SectionCard } from "@/components/domain/section-card";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatMonth, monthOf } from "@/domain/dates";
 import { formatPence } from "@/domain/money";
-import type { MatrixRow } from "@/domain/types";
+import type { MatrixLens, MatrixRow, Owner } from "@/domain/types";
 import { cn } from "@/lib/utils";
 import { isOverBudget } from "@/server/calc";
 import { useHousehold } from "@/store/household-store";
 
 export default function BudgetsPage() {
-  const { view, clock, matrix, dispatch } = useHousehold();
+  const { view, clock, matrix, dispatch, users } = useHousehold();
   const currentMonth = monthOf(clock.today);
   const [startMonth, setStartMonth] = useState(currentMonth);
   const [mobileMonth, setMobileMonth] = useState(currentMonth);
-  const m = useMemo(() => matrix(startMonth), [matrix, startMonth]);
+  const [lensKey, setLensKey] = useState<string>("all");
+  const lens: MatrixLens =
+    lensKey === "all" ? "all" : lensKey === "joint" ? { kind: "joint" } : { kind: "user", userId: lensKey };
+  const budgetOwner: Owner = lens === "all" || lens.kind === "joint" ? { kind: "joint" } : lens;
+  const m = useMemo(() => matrix(startMonth, lens), [matrix, startMonth, lens]);
   const mobileIndex = Math.max(0, m.months.indexOf(mobileMonth));
 
-  const onBudgetChange = (categoryId: string, pence: number) =>
-    dispatch({ type: "updateVariableBudget", categoryId, monthlyPence: pence });
+  // in All view the budget column is a read-only sum; pick a lens to edit that lens's budgets
+  const onBudgetChange =
+    lensKey === "all"
+      ? undefined
+      : (categoryId: string, pence: number) =>
+          void dispatch({ type: "updateVariableBudget", categoryId, owner: budgetOwner, monthlyPence: pence });
 
   return (
     <>
@@ -56,6 +66,34 @@ export default function BudgetsPage() {
         left in this month's budgets.
       </LedgerSentence>
 
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <Select value={lensKey} onValueChange={setLensKey}>
+          <SelectTrigger className="h-8 w-44" aria-label="Whose budgets to show">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Whole household</SelectItem>
+            <SelectItem value="joint">Joint only</SelectItem>
+            {users.map((u) => (
+              <SelectItem key={u.id} value={u.id}>
+                {u.name}'s
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {lensKey !== "all" ? (
+          <span className="flex items-center gap-1.5 text-[12px] text-ink-muted">
+            <PersonBadge owner={budgetOwner} users={users} size="xs" />
+            budgets owned by this lens; actuals are what{" "}
+            {lensKey === "joint" ? "the joint account" : (users.find((u) => u.id === lensKey)?.name ?? "they")} paid
+          </span>
+        ) : (
+          <span className="text-[12px] text-ink-muted">
+            Pick a lens to edit that person's (or the joint) variable budgets
+          </span>
+        )}
+      </div>
+
       {/* desktop grids */}
       <div className="hidden flex-col gap-4 md:flex">
         <SectionCard
@@ -78,7 +116,7 @@ export default function BudgetsPage() {
             totals={m.variableTotals}
             months={m.months}
             currentMonth={currentMonth}
-            budgetEditable
+            budgetEditable={Boolean(onBudgetChange)}
             onBudgetChange={onBudgetChange}
           />
         </SectionCard>

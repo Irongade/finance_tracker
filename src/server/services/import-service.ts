@@ -116,7 +116,8 @@ export class ImportService {
 
       for (const v of data.variableBudgets) {
         const c = categoryByName.get(v.category.toLowerCase());
-        if (c && c.type === "variable") await r.variableBudgets.upsert(householdId, c.id, v.monthlyPence, tx);
+        if (c && c.type === "variable")
+          await r.variableBudgets.upsert(householdId, c.id, { kind: "joint" }, v.monthlyPence, tx);
       }
 
       let potRows = 0;

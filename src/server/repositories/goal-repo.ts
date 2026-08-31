@@ -90,6 +90,16 @@ export class GoalRepository {
     return { goalId: r.goalId, userId: r.memberId, monthlyPence: r.monthlyPence };
   }
 
+  /** Persists a drag-reorder: each id gets its index as the sort value. */
+  async updateSort(householdId: string, ids: string[], h: DbHandle = this.db): Promise<void> {
+    for (const [index, id] of ids.entries()) {
+      await h
+        .update(s.goals)
+        .set({ sort: index })
+        .where(and(eq(s.goals.id, id), eq(s.goals.householdId, householdId)));
+    }
+  }
+
   /** Exactly one emergency fund per household. */
   async setEmergencyFund(householdId: string, goalId: string, h: DbHandle = this.db): Promise<void> {
     await h

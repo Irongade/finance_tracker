@@ -2,7 +2,7 @@
  * Section 5 calculation engine. Pure and deterministic: a Household plus a
  * Clock in, computed views out. Imports nothing from other layers.
  */
-import type { Clock, Household, HouseholdView, ISOMonth, Matrix } from "@/domain/types";
+import type { Clock, Household, HouseholdView, ISOMonth, Matrix, MatrixLens } from "@/domain/types";
 import { computeActuals } from "./actuals";
 import { computeAffordability } from "./affordability";
 import { computeBills } from "./bills";
@@ -56,8 +56,13 @@ export function computeHouseholdView(h: Household, clock: Clock): HouseholdView 
   };
 }
 
-export function computeBudgetMatrix(h: Household, startMonth: ISOMonth, clock: Clock): Matrix {
-  return computeMatrix(h, startMonth, computeDebts(h, clock), categoryTypes(h));
+export function computeBudgetMatrix(
+  h: Household,
+  startMonth: ISOMonth,
+  clock: Clock,
+  lens: MatrixLens = "all",
+): Matrix {
+  return computeMatrix(h, startMonth, computeDebts(h, clock), categoryTypes(h), lens);
 }
 
 export { computeActuals } from "./actuals";

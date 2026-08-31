@@ -3,20 +3,26 @@
 /**
  * The past, measured — the backwards-looking counterpart to Forecast.
  * Everything is computed client-side from the household's own transactions
- * and snapshots; nothing here is stored.
+ * and snapshots. Chart style, lens and category choices are per-device
+ * preferences (localStorage), so you can each look at it your own way.
  */
 
+import { ListFilter } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Figure, LedgerSentence } from "@/components/domain/ledger-sentence";
 import { MoneyText } from "@/components/domain/money-text";
 import { PersonBadge } from "@/components/domain/person-badge";
 import { SectionCard } from "@/components/domain/section-card";
-import { TrendChart } from "@/components/domain/trend-chart";
+import { BreakdownPie, TrendChart } from "@/components/domain/trend-chart";
 import { PageHeader } from "@/components/shell/page-header";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addMonths, formatMonth, isSameMonth, monthOf } from "@/domain/dates";
 import { formatPence } from "@/domain/money";
 import type { ISOMonth, Owner } from "@/domain/types";
+import { useLocalSetting } from "@/hooks/use-local-setting";
 import { cn } from "@/lib/utils";
 import { useHousehold } from "@/store/household-store";
 
@@ -27,6 +33,19 @@ const WINDOWS = [
   { value: "24", label: "Last 24 months" },
 ];
 
+const PALETTE = [
+  "var(--workbook-blue)",
+  "var(--ade-teal)",
+  "var(--p-plum)",
+  "var(--fern)",
+  "var(--amber)",
+  "var(--brick)",
+  "var(--ledger-navy)",
+  "#6B7A99",
+  "#B08968",
+  "#4C86A8",
+];
+
 function payerKey(paidBy: Owner, user1: string): "user1" | "user2" | "joint" {
   if (paidBy.kind === "joint") return "joint";
   return paidBy.userId === user1 ? "user1" : "user2";
@@ -35,13 +54,30 @@ function payerKey(paidBy: Owner, user1: string): "user1" | "user2" | "joint" {
 export default function MetricsPage() {
   const { household, view, users, clock, categoryById } = useHousehold();
   const [windowSize, setWindowSize] = useState("12");
+  const [lensKey, setLensKey] = useState<string>("all"); // all | joint | member id
+  const [excluded, setExcluded] = useLocalSetting<string[]>("metrics-excluded-categories", []);
+  const [monthChart, setMonthChart] = useLocalSetting<"line" | "bar">("metrics-month-chart", "line");
+  const [categoryChart, setCategoryChart] = useLocalSetting<"bars" | "pie">("metrics-category-chart", "bars");
+
   const n = Number(windowSize);
   const currentMonth = monthOf(clock.today);
-
   const months = useMemo<ISOMonth[]>(
     () => Array.from({ length: n }, (_, i) => addMonths(currentMonth, i - (n - 1))),
     [currentMonth, n],
   );
+
+  const spendingCategories = useMemo(
+    () => household.categories.filter((c) => !c.archived && c.type !== "transfer").sort((a, b) => a.sort - b.sort),
+    [household.categories],
+  );
+  const excludedSet = useMemo(() => new Set(excluded), [excluded]);
+  const filteringCategories = excludedSet.size > 0;
+
+  const matchesLens = useMemo(() => {
+    if (lensKey === "all") return () => true;
+    if (lensKey === "joint") return (paidBy: Owner) => paidBy.kind === "joint";
+    return (paidBy: Owner) => paidBy.kind === "user" && paidBy.userId === lensKey;
+  }, [lensKey]);
 
   const stats = useMemo(() => {
     const perMonth = new Map<ISOMonth, { spent: number; transfers: number }>(
@@ -53,6 +89,7 @@ export default function MetricsPage() {
     for (const t of household.transactions) {
       const m = months.find((mo) => isSameMonth(t.date, mo));
       if (!m) continue;
+      if (!matchesLens(t.paidBy)) continue;
       const type = categoryById(t.categoryId)?.type ?? "variable";
       const bucket = perMonth.get(m);
       if (!bucket) continue;
@@ -60,6 +97,7 @@ export default function MetricsPage() {
         bucket.transfers += t.amountPence;
         continue;
       }
+      if (excludedSet.has(t.categoryId)) continue;
       bucket.spent += t.amountPence;
       total += t.amountPence;
       byCategory.set(t.categoryId, (byCategory.get(t.categoryId) ?? 0) + t.amountPence);
@@ -71,7 +109,7 @@ export default function MetricsPage() {
       .sort((a, b) => b.pence - a.pence);
     const activeMonths = [...perMonth.values()].filter((v) => v.spent !== 0).length || 1;
     return { perMonth, categories, byPayer, total, average: total / activeMonths };
-  }, [household.transactions, months, categoryById, users]);
+  }, [household.transactions, months, categoryById, users, matchesLens, excludedSet]);
 
   const spendingData = useMemo(
     () =>
@@ -93,8 +131,16 @@ export default function MetricsPage() {
       .map(([m, pence]) => ({ month: formatMonth(m), pots: pence }));
   }, [household.potSnapshots]);
 
+  const slices = useMemo(
+    () =>
+      stats.categories
+        .slice(0, 10)
+        .map((c, i) => ({ name: c.name, value: c.pence, color: PALETTE[i % PALETTE.length] })),
+    [stats.categories],
+  );
   const maxCategory = stats.categories[0]?.pence ?? 1;
   const payerTotal = stats.byPayer.user1 + stats.byPayer.user2 + stats.byPayer.joint || 1;
+  const filtered = lensKey !== "all" || filteringCategories;
 
   return (
     <>
@@ -116,19 +162,93 @@ export default function MetricsPage() {
           </Select>
         }
       />
-      <LedgerSentence className="mb-6">
+      <LedgerSentence className="mb-4">
         <Figure>{formatPence(stats.total, { style: "whole" })}</Figure> spent over the last {n} months, about{" "}
-        <Figure>{formatPence(stats.average, { style: "whole" })}</Figure> a month.
+        <Figure>{formatPence(stats.average, { style: "whole" })}</Figure> a month{filtered ? " (filtered)" : ""}.
       </LedgerSentence>
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <Select value={lensKey} onValueChange={setLensKey}>
+          <SelectTrigger className="h-8 w-40" aria-label="Whose spending to show">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Everyone</SelectItem>
+            <SelectItem value="joint">Joint account</SelectItem>
+            {users.map((u) => (
+              <SelectItem key={u.id} value={u.id}>
+                Paid by {u.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={filteringCategories ? "border-blue text-navy" : undefined}>
+              <ListFilter /> Categories
+              {filteringCategories ? (
+                <span className="ml-1 rounded-full bg-blue/10 px-1.5 text-[11px] text-navy">
+                  {spendingCategories.length - excludedSet.size} of {spendingCategories.length}
+                </span>
+              ) : null}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-60 p-3" align="start">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-[12.5px] font-medium text-navy">Count these categories</p>
+              {filteringCategories ? (
+                <Button variant="ghost" size="xs" onClick={() => setExcluded([])}>
+                  All
+                </Button>
+              ) : null}
+            </div>
+            <ul className="grid max-h-64 gap-1.5 overflow-y-auto">
+              {spendingCategories.map((c) => (
+                <li key={c.id} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`metric-cat-${c.id}`}
+                    checked={!excludedSet.has(c.id)}
+                    onCheckedChange={(v) =>
+                      setExcluded(v === true ? excluded.filter((id) => id !== c.id) : [...excluded, c.id])
+                    }
+                  />
+                  <label htmlFor={`metric-cat-${c.id}`} className="text-[13px] text-ink">
+                    {c.name}
+                  </label>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-[11.5px] text-ink-muted">Saved on this device only.</p>
+          </PopoverContent>
+        </Popover>
+        {lensKey !== "all" ? (
+          <span className="text-[12px] text-ink-muted">
+            Showing what{" "}
+            {lensKey === "joint" ? "the joint account" : (users.find((u) => u.id === lensKey)?.name ?? "they")} paid
+          </span>
+        ) : null}
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2 md:items-start">
         <SectionCard
           className="md:col-span-2"
           title="Spending by month"
-          description="Fixed + variable, against today's monthly budget; transfers to pots shown separately"
+          description="Against today's monthly budget; transfers to pots shown separately"
+          action={
+            <Select value={monthChart} onValueChange={(v) => setMonthChart(v as "line" | "bar")}>
+              <SelectTrigger className="h-7 w-24" aria-label="Chart style">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="line">Line</SelectItem>
+                <SelectItem value="bar">Bars</SelectItem>
+              </SelectContent>
+            </Select>
+          }
         >
           <TrendChart
             height={260}
+            variant={monthChart}
             data={spendingData}
             xKey="month"
             series={[
@@ -139,9 +259,38 @@ export default function MetricsPage() {
           />
         </SectionCard>
 
-        <SectionCard title="Where it goes" description={`Spending by category, last ${n} months`}>
+        <SectionCard
+          title="Where it goes"
+          description={`Spending by category, last ${n} months`}
+          action={
+            <Select value={categoryChart} onValueChange={(v) => setCategoryChart(v as "bars" | "pie")}>
+              <SelectTrigger className="h-7 w-24" aria-label="Chart style">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bars">Bars</SelectItem>
+                <SelectItem value="pie">Pie</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+        >
           {stats.categories.length === 0 ? (
             <p className="text-[13px] text-ink-muted">Nothing logged in this window yet.</p>
+          ) : categoryChart === "pie" ? (
+            <div className="grid gap-3">
+              <BreakdownPie data={slices} />
+              <ul className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                {slices.map((slice) => (
+                  <li key={slice.name} className="flex items-center gap-1.5 text-[12.5px]">
+                    <span className="size-2.5 shrink-0 rounded-full" style={{ background: slice.color }} />
+                    <span className="min-w-0 flex-1 truncate text-ink">{slice.name}</span>
+                    <span className="money text-ink-muted">
+                      {Math.round((slice.value / (stats.total || 1)) * 100)}%
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ) : (
             <ul className="grid gap-2.5">
               {stats.categories.slice(0, 10).map((c) => (
@@ -167,41 +316,43 @@ export default function MetricsPage() {
           )}
         </SectionCard>
 
-        <SectionCard title="Who paid" description="By the account it left, which is what settle-up cares about">
-          <ul className="grid gap-3">
-            {(
-              [
-                ["user1", { kind: "user", userId: users[0].id } as Owner, "bg-ade-teal"],
-                ["user2", { kind: "user", userId: users[1].id } as Owner, "bg-p-plum"],
-                ["joint", { kind: "joint" } as Owner, "bg-navy"],
-              ] as const
-            ).map(([key, owner, bar]) => (
-              <li key={key}>
-                <div className="mb-1 flex items-center justify-between gap-2 text-[13px]">
-                  <PersonBadge owner={owner} users={users} size="xs" withName />
-                  <span>
-                    <MoneyText pence={stats.byPayer[key]} style="whole" />{" "}
-                    <span className="text-[11.5px] text-ink-muted">
-                      {Math.round((stats.byPayer[key] / payerTotal) * 100)}%
+        {lensKey === "all" ? (
+          <SectionCard title="Who paid" description="By the account it left, which is what settle-up cares about">
+            <ul className="grid gap-3">
+              {(
+                [
+                  ["user1", { kind: "user", userId: users[0].id } as Owner, "bg-ade-teal"],
+                  ["user2", { kind: "user", userId: users[1].id } as Owner, "bg-p-plum"],
+                  ["joint", { kind: "joint" } as Owner, "bg-navy"],
+                ] as const
+              ).map(([key, owner, bar]) => (
+                <li key={key}>
+                  <div className="mb-1 flex items-center justify-between gap-2 text-[13px]">
+                    <PersonBadge owner={owner} users={users} size="xs" withName />
+                    <span>
+                      <MoneyText pence={stats.byPayer[key]} style="whole" />{" "}
+                      <span className="text-[11.5px] text-ink-muted">
+                        {Math.round((stats.byPayer[key] / payerTotal) * 100)}%
+                      </span>
                     </span>
-                  </span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-row-hover">
-                  <div
-                    className={cn("h-full rounded-full", bar)}
-                    style={{ width: `${(stats.byPayer[key] / payerTotal) * 100}%` }}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-[12px] text-ink-muted">
-            Shared costs paid personally build the settle-up balance; joint-account payments are already fair.
-          </p>
-        </SectionCard>
+                  </div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-row-hover">
+                    <div
+                      className={cn("h-full rounded-full", bar)}
+                      style={{ width: `${(stats.byPayer[key] / payerTotal) * 100}%` }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-[12px] text-ink-muted">
+              Shared costs paid personally build the settle-up balance; joint-account payments are already fair.
+            </p>
+          </SectionCard>
+        ) : null}
 
         <SectionCard
-          className="md:col-span-2"
+          className={lensKey === "all" ? undefined : "md:col-span-2"}
           title="Pots, actually"
           description="Every month-end balance you've typed in — the lived version of the forecast"
         >
@@ -214,6 +365,7 @@ export default function MetricsPage() {
               height={220}
               data={potsHistory}
               xKey="month"
+              showLegend={false}
               series={[{ key: "pots", name: "All pots", color: "var(--ledger-navy)", width: 2.25 }]}
             />
           )}

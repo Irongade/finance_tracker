@@ -10,6 +10,7 @@ import type {
   Debt,
   IncomeSource,
   InvestmentAccount,
+  Owner,
   VariableBudget,
 } from "@/domain/types";
 import { ConflictError, DomainRuleError, NotFoundError } from "@/server/errors";
@@ -61,7 +62,7 @@ export class CategoryService {
         `This category is used by ${usage} ${usage === 1 ? "row" : "rows"}. Archive it instead.`,
       );
     return mutate(this.deps, householdId, async (tx) => {
-      await this.deps.repos.variableBudgets.delete(householdId, id, tx);
+      await this.deps.repos.variableBudgets.deleteAllForCategory(householdId, id, tx);
       const ok = await this.deps.repos.categories.delete(householdId, id, tx);
       if (!ok) throw new NotFoundError("category", id);
       return null;
@@ -209,6 +210,7 @@ export class BudgetService {
   async setVariableBudget(
     householdId: string,
     categoryId: string,
+    owner: Owner,
     monthlyPence: number,
   ): Promise<Mutation<VariableBudget>> {
     if (!Number.isInteger(monthlyPence) || monthlyPence < 0)
@@ -220,8 +222,12 @@ export class BudgetService {
         "Only variable categories take a budget; fixed budgets come from the bills",
         "categoryId",
       );
+    if (owner.kind === "user") {
+      const h = await loadHousehold(this.deps, householdId);
+      assertMember(h, owner.userId, "owner");
+    }
     return mutate(this.deps, householdId, (tx) =>
-      this.deps.repos.variableBudgets.upsert(householdId, categoryId, monthlyPence, tx),
+      this.deps.repos.variableBudgets.upsert(householdId, categoryId, owner, monthlyPence, tx),
     );
   }
 }

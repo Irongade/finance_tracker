@@ -185,8 +185,13 @@ export interface InvestmentSnapshot {
 
 export interface VariableBudget {
   categoryId: string;
+  /** joint = split by the household rule; a person's own budget comes off their leftover */
+  owner: Owner;
   monthlyPence: Pence;
 }
+
+/** Which slice of the household a budget grid shows. */
+export type MatrixLens = "all" | Owner;
 
 /** Everything the calc engine needs, for one household. */
 export interface Household {
@@ -284,6 +289,8 @@ export interface PersonSnapshot {
   shareOfJointBillsPence: Pence;
   shareOfVariableBudgetPence: Pence;
   shareOfJointPence: Pence;
+  /** this person's own (non-joint) variable budgets */
+  ownVariableBudgetPence: Pence;
   pledgesPence: Pence;
   debtPaymentsPence: Pence;
   investPence: Pence;

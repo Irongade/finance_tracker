@@ -1,19 +1,21 @@
+"use client";
+
 import { ChevronRight } from "lucide-react";
-import type { Metadata } from "next";
 import Link from "next/link";
 import { SectionCard } from "@/components/domain/section-card";
-import { MORE_ITEMS } from "@/components/shell/nav";
+import { MOBILE_PRIMARY } from "@/components/shell/nav";
 import { PageHeader } from "@/components/shell/page-header";
-
-export const metadata: Metadata = { title: "More" };
+import { useNavOrder } from "@/hooks/use-nav-order";
 
 export default function MorePage() {
+  const { items } = useNavOrder();
+  const rest = items.filter((i) => !MOBILE_PRIMARY.includes(i.href));
   return (
     <>
       <PageHeader title="More" />
       <SectionCard flush>
         <ul className="divide-y divide-hairline">
-          {MORE_ITEMS.map((item) => (
+          {rest.map((item) => (
             <li key={item.href}>
               <Link
                 href={item.href}

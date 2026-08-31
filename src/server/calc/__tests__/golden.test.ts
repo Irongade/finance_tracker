@@ -161,6 +161,21 @@ describe("behavioural criteria", () => {
     expect(computeHouseholdView(h, clock).settleUp.direction).toBe("square");
   });
 
+  it("a personal variable budget comes off that person's leftover only", () => {
+    const h = cloneSeed();
+    // P budgets £100/mo of her own transport on top of the joint budgets
+    h.variableBudgets.push({
+      categoryId: CATEGORY.transport,
+      owner: { kind: "user", userId: P },
+      monthlyPence: 10_000,
+    });
+    const v = computeHouseholdView(h, clock);
+    expect(pounds(v.persons[1].leftoverPence)).toBe("£587"); // 687 - 100
+    expect(pounds(v.persons[0].leftoverPence)).toBe("£1,468"); // Ade untouched
+    expect(pounds(v.budget.leftoverPence)).toBe("£2,055"); // household drops by the same £100
+    expect(pounds(v.budget.variablePence)).toBe("£1,120");
+  });
+
   it("gross salaries drive the mortgage; take-home x 12 is only the fallback", () => {
     expect(view.affordability.usesGrossIncome).toBe(false); // seed has no gross set -> workbook behaviour
     const h = cloneSeed();

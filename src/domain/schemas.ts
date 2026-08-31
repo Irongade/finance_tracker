@@ -139,7 +139,11 @@ export const monthSnapshotSchema = z.object({ month: isoMonth, values: z.record(
 
 export const netWorthSnapshotSchema = z.object({ month: isoMonth, valuePence: z.number().int().optional() });
 
-export const variableBudgetSchema = z.object({ categoryId: z.string().min(1), monthlyPence: z.number().int().min(0) });
+export const variableBudgetSchema = z.object({
+  categoryId: z.string().min(1),
+  owner: ownerSchema,
+  monthlyPence: z.number().int().min(0),
+});
 
 export const categoryCreateSchema = z.object({
   name: z.string().trim().min(1, "Name the category").max(40),
