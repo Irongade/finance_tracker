@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { excelSerialToISO, parseWorkbook, toPence } from "../workbook";
 
 const WORKBOOK = "data/Ade_P_Finance_Tracker_v2.xlsx";
@@ -15,7 +15,12 @@ describe("workbook helpers", () => {
 });
 
 describe.skipIf(!existsSync(WORKBOOK))("parseWorkbook (section 11)", () => {
-  const data = parseWorkbook(new Uint8Array(readFileSync(WORKBOOK)));
+  // parsed lazily: a skipped suite still has its body executed during collection,
+  // and CI has no workbook (it is deliberately gitignored)
+  let data: ReturnType<typeof parseWorkbook>;
+  beforeAll(() => {
+    data = parseWorkbook(new Uint8Array(readFileSync(WORKBOOK)));
+  });
 
   it("reads settings and names", () => {
     expect(data.memberNames).toEqual(["Ade", "P"]);
