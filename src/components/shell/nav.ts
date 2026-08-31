@@ -1,6 +1,7 @@
 import {
   BookOpen,
   CalendarCheck,
+  ChartColumn,
   ChartLine,
   CreditCard,
   Grid3x3,
@@ -31,6 +32,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/budgets", label: "Budgets", icon: Grid3x3 },
   { href: "/pots", label: "Pots", icon: PiggyBank },
   { href: "/investments", label: "Investments", icon: TrendingUp },
+  { href: "/metrics", label: "Metrics", icon: ChartColumn },
   { href: "/forecast", label: "Forecast", icon: ChartLine },
   { href: "/debts", label: "Debts", icon: CreditCard },
   { href: "/net-worth", label: "Net Worth", icon: Landmark },

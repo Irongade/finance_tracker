@@ -31,7 +31,7 @@ export function MatrixTable({
   const cell = (actual: number, budget: number, emphasis = false) => (
     <td
       className={cn(
-        "whitespace-nowrap px-3 py-2 text-right text-[12.5px]",
+        "whitespace-nowrap px-3 py-2 text-right text-[12.5px] last:pr-4 md:last:pr-5",
         emphasis && "font-semibold text-navy",
         isOverBudget(actual, budget) && "bg-blush text-brick",
       )}
@@ -59,7 +59,10 @@ export function MatrixTable({
               <th
                 key={m}
                 scope="col"
-                className={cn("px-3 py-2 text-right font-medium", m === currentMonth && "text-blue")}
+                className={cn(
+                  "px-3 py-2 text-right font-medium last:pr-4 md:last:pr-5",
+                  m === currentMonth && "text-blue",
+                )}
               >
                 {formatMonth(m)}
               </th>

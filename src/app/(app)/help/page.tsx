@@ -18,6 +18,7 @@ const TAB_NOTES: Record<string, string> = {
   "/budgets": "Budget vs actual, 12 rolling months, fixed and variable kept separate.",
   "/pots": "Actual pot balances, typed in monthly. Anchors Saved so far and the forecast.",
   "/investments": "Account-level investments: month-end values, contributions as transfers, growth projection.",
+  "/metrics": "The past, measured: spending by month, categories, who paid, and how the pots actually grew.",
   "/forecast": "24-month projection from the latest balances, incl LISA bonuses.",
   "/debts": "Balances, payoff dates, avalanche vs snowball order. Feeds My Money and net worth. Empty is fine.",
   "/net-worth": "Everyday accounts + goal pots + investments − debts.",

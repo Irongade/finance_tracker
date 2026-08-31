@@ -108,6 +108,21 @@ export class HouseholdRepository {
     return rows.length === 1;
   }
 
+  /** Swaps which login is which person. Both seats must be linked; unique index dodged via a two-step update. */
+  async swapMemberAuth(householdId: string, h: DbHandle = this.db): Promise<boolean> {
+    const members = await h
+      .select({ id: s.householdMembers.id, authUserId: s.householdMembers.authUserId })
+      .from(s.householdMembers)
+      .where(eq(s.householdMembers.householdId, householdId))
+      .orderBy(asc(s.householdMembers.position));
+    const [m1, m2] = members;
+    if (!m1?.authUserId || !m2?.authUserId) return false;
+    await h.update(s.householdMembers).set({ authUserId: null }).where(eq(s.householdMembers.id, m1.id));
+    await h.update(s.householdMembers).set({ authUserId: m1.authUserId }).where(eq(s.householdMembers.id, m2.id));
+    await h.update(s.householdMembers).set({ authUserId: m2.authUserId }).where(eq(s.householdMembers.id, m1.id));
+    return true;
+  }
+
   async getSettings(householdId: string, h: DbHandle = this.db): Promise<Settings | null> {
     const [r] = await h.select().from(s.settings).where(eq(s.settings.householdId, householdId)).limit(1);
     return r

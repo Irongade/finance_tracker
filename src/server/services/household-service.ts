@@ -81,6 +81,18 @@ export class HouseholdService {
     });
   }
 
+  /**
+   * If the wrong person registered first, the member labels and their data are
+   * fine but the logins are attached to the wrong seats; this swaps them.
+   */
+  async swapLogins(householdId: string): Promise<Mutation<null>> {
+    return mutate(this.deps, householdId, async (tx) => {
+      const ok = await this.deps.repos.households.swapMemberAuth(householdId, tx);
+      if (!ok) throw new DomainRuleError("Both of you need to have signed up before the logins can be swapped");
+      return null;
+    });
+  }
+
   /** Returns the raw token exactly once; only its hash is stored. */
   async createInvite(
     householdId: string,

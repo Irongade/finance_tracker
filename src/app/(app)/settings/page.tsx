@@ -10,6 +10,7 @@ import { MoneyInput } from "@/components/domain/money-input";
 import { MoneyText } from "@/components/domain/money-text";
 import { PersonBadge } from "@/components/domain/person-badge";
 import { LineItem, SectionCard } from "@/components/domain/section-card";
+import { SwapLoginsCard } from "@/components/domain/swap-logins-card";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -313,6 +314,7 @@ export default function SettingsPage() {
         </SectionCard>
 
         <InvitePartnerCard />
+        <SwapLoginsCard />
         <ChangePasswordCard />
       </div>
     </>

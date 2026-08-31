@@ -57,6 +57,14 @@ interface PreviewRow {
 
 const mappingKey = (headers: string[]) => `csv-mapping:${headers.join("|").toLowerCase()}`;
 
+/** Most statements list spending as negative; if the column is mostly positive, spending is positive. */
+function detectSign(rows: string[][], amountCol: number): SignConvention {
+  const amounts = rows.map((r) => parseCsvAmount(r[amountCol] ?? "")).filter((n): n is number => n !== null && n !== 0);
+  if (amounts.length === 0) return "bank";
+  const negatives = amounts.filter((n) => n < 0).length;
+  return negatives / amounts.length >= 0.5 ? "bank" : "positive";
+}
+
 function guessColumn(headers: string[], patterns: RegExp[], fallback: number): number {
   for (const pattern of patterns) {
     const i = headers.findIndex((h) => pattern.test(h));
@@ -149,12 +157,13 @@ export function CsvImportDialog({ open, onOpenChange }: { open: boolean; onOpenC
     }
     if (!next) {
       const dateCol = guessColumn(parsed.headers, [/date/i], 0);
+      const amountCol = guessColumn(parsed.headers, [/amount|value|debit/i], parsed.headers.length - 1);
       next = {
         dateCol,
         descriptionCol: guessColumn(parsed.headers, [/desc|narrat|detail|merchant|reference|memo|name/i], 1),
-        amountCol: guessColumn(parsed.headers, [/amount|value|debit/i], parsed.headers.length - 1),
+        amountCol,
         dateFormat: detectDateFormat(parsed.rows.map((r) => r[dateCol] ?? "")),
-        sign: "bank",
+        sign: detectSign(parsed.rows, amountCol),
       };
     }
     setMapping(next);
@@ -324,7 +333,9 @@ export function CsvImportDialog({ open, onOpenChange }: { open: boolean; onOpenC
               {columnSelect("Description column", mapping.descriptionCol, (i) =>
                 setMapping({ ...mapping, descriptionCol: i }),
               )}
-              {columnSelect("Amount column", mapping.amountCol, (i) => setMapping({ ...mapping, amountCol: i }))}
+              {columnSelect("Amount column", mapping.amountCol, (i) =>
+                setMapping({ ...mapping, amountCol: i, sign: detectSign(rows, i) }),
+              )}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="grid gap-1.5">
@@ -413,6 +424,22 @@ export function CsvImportDialog({ open, onOpenChange }: { open: boolean; onOpenC
 
         {step === "preview" ? (
           <div className="grid gap-3">
+            {preview.length > 0 && preview.filter((r) => r.amountPence < 0).length / preview.length > 0.5 ? (
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-butter px-3 py-2 text-[12.5px] text-amber">
+                <span>
+                  Most rows would import as refunds. If they're ordinary spending, the amount signs are flipped.
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="border-amber/40 bg-surface text-amber hover:bg-butter"
+                  onClick={() => setPreview((p) => p.map((r) => ({ ...r, amountPence: -r.amountPence })))}
+                >
+                  Flip signs
+                </Button>
+              </div>
+            ) : null}
             <div className="max-h-80 overflow-y-auto rounded-lg border border-hairline">
               <table className="w-full text-[12.5px]">
                 <thead className="sticky top-0 bg-surface">
@@ -445,8 +472,11 @@ export function CsvImportDialog({ open, onOpenChange }: { open: boolean; onOpenC
                           </span>
                         ) : null}
                       </td>
-                      <td className="px-2 py-1 text-right">
+                      <td className="whitespace-nowrap px-2 py-1 text-right">
                         <MoneyText pence={Math.abs(r.amountPence)} className={r.amountPence < 0 ? "text-fern" : ""} />
+                        {r.amountPence < 0 ? (
+                          <span className="ml-1 rounded-full bg-mint px-1.5 text-[10.5px] text-fern">refund</span>
+                        ) : null}
                       </td>
                       <td className="px-2 py-1">
                         <Select
