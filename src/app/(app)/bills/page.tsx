@@ -122,10 +122,11 @@ export default function BillsPage() {
         open={editing !== null}
         bill={editing === "new" ? null : editing}
         onOpenChange={(o) => (o ? null : setEditing(null))}
-        onSave={(bill) => {
-          dispatch(
+        onSave={async (bill) => {
+          const ok = await dispatch(
             household.bills.some((b) => b.id === bill.id) ? { type: "updateBill", bill } : { type: "addBill", bill },
           );
+          if (!ok) return;
           toast.success(editing === "new" ? "Bill added" : "Bill saved", { description: bill.name });
           setEditing(null);
         }}
@@ -149,7 +150,7 @@ function BillDialog({
   open: boolean;
   bill: Bill | null;
   onOpenChange: (o: boolean) => void;
-  onSave: (bill: Bill) => void;
+  onSave: (bill: Bill) => unknown; // may return a promise; the dialog awaits it
   onArchive: (id: string) => void;
 }) {
   const { household, users } = useHousehold();
@@ -163,6 +164,7 @@ function BillDialog({
   const [dueDay, setDueDay] = useState<string>(bill?.dueDay?.toString() ?? "");
   const [owner, setOwner] = useState<Owner>(bill?.owner ?? { kind: "joint" });
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const ownerOptions: Owner[] = [
     { kind: "joint" },
@@ -182,7 +184,8 @@ function BillDialog({
         <form
           id="bill-form"
           className="grid gap-4"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
+            if (busy) return;
             e.preventDefault();
             const parsed = billInputSchema.safeParse({
               name,
@@ -196,7 +199,9 @@ function BillDialog({
               setError(parsed.error.issues[0]?.message ?? "Check the form");
               return;
             }
-            onSave({ id: bill?.id ?? newId("bill"), archived: false, ...parsed.data });
+            setBusy(true);
+            await onSave({ id: bill?.id ?? newId("bill"), archived: false, ...parsed.data });
+            setBusy(false);
           }}
         >
           <div className="grid gap-1.5">
@@ -283,7 +288,7 @@ function BillDialog({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" form="bill-form">
+            <Button type="submit" form="bill-form" pending={busy}>
               {bill ? "Save" : "Add bill"}
             </Button>
           </div>

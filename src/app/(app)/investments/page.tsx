@@ -272,9 +272,11 @@ export default function InvestmentsPage() {
                 accent: <WrapperChip wrapper={a.account.wrapper} />,
               }))}
               existing={existing}
-              onSave={(values) => {
-                dispatch({ type: "saveInvestmentSnapshots", month, values });
-                toast.success("Snapshot saved", { description: `${formatMonth(month, "long")} values updated.` });
+              onSave={async (values) => {
+                const ok = await dispatch({ type: "saveInvestmentSnapshots", month, values });
+                if (ok)
+                  toast.success("Snapshot saved", { description: `${formatMonth(month, "long")} values updated.` });
+                return ok;
               }}
             />
           </SectionCard>
@@ -331,8 +333,9 @@ export default function InvestmentsPage() {
         key={adding ? "open" : "closed"}
         open={adding}
         onOpenChange={setAdding}
-        onSave={(account) => {
-          dispatch({ type: "addInvestmentAccount", account });
+        onSave={async (account) => {
+          const ok = await dispatch({ type: "addInvestmentAccount", account });
+          if (!ok) return;
           toast.success("Account added", { description: `${account.name}. Enter its first value below.` });
           setAdding(false);
         }}
@@ -348,7 +351,7 @@ function AccountDialog({
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onSave: (a: InvestmentAccount) => void;
+  onSave: (a: InvestmentAccount) => unknown; // may return a promise; the dialog awaits it
 }) {
   const { users } = useHousehold();
   const [name, setName] = useState("");
@@ -359,6 +362,7 @@ function AccountDialog({
   const [growth, setGrowth] = useState("5");
   const [contributedBeforePence, setBefore] = useState<number | null>(0);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const ownerOptions: Owner[] = [
     { kind: "user", userId: users[0].id },
     { kind: "user", userId: users[1].id },
@@ -375,7 +379,8 @@ function AccountDialog({
         <form
           id="inv-form"
           className="grid gap-4"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
+            if (busy) return;
             e.preventDefault();
             const parsed = investmentAccountInputSchema.safeParse({
               name,
@@ -391,7 +396,9 @@ function AccountDialog({
               setError(parsed.error.issues[0]?.message ?? "Check the form");
               return;
             }
-            onSave({ id: newId("inv"), archived: false, ...parsed.data });
+            setBusy(true);
+            await onSave({ id: newId("inv"), archived: false, ...parsed.data });
+            setBusy(false);
           }}
         >
           <div className="grid grid-cols-2 gap-3">
@@ -485,7 +492,7 @@ function AccountDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="submit" form="inv-form">
+          <Button type="submit" form="inv-form" pending={busy}>
             Add account
           </Button>
         </DialogFooter>

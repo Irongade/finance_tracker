@@ -15,14 +15,24 @@ import { useHousehold } from "@/store/household-store";
 export function InvitePartnerCard() {
   const { users } = useHousehold();
   const partner = users[1];
-  const [link, setLink] = useState<{ url: string; expiresAt: string } | null>(null);
+  const [link, setLink] = useState<{ url: string; expiresAt: string; emailed: boolean } | null>(null);
+  const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
 
   const create = async () => {
+    if (busy) return;
     setBusy(true);
     try {
-      const data = await api<{ url: string; expiresAt: string }>({ method: "POST", url: "/api/invites" });
+      const data = await api<{ url: string; expiresAt: string; emailed: boolean }>({
+        method: "POST",
+        url: "/api/invites",
+        body: email.trim() ? { email: email.trim() } : {},
+      });
       setLink(data);
+      if (email.trim()) {
+        if (data.emailed) toast.success("Invite emailed", { description: email.trim() });
+        else toast("Email isn't set up on the server", { description: "Copy the link and send it yourself." });
+      }
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Could not create the link");
     } finally {
@@ -62,14 +72,24 @@ export function InvitePartnerCard() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="grid gap-2">
           <p className="text-[13px] text-ink-muted">
             {partner.name} hasn't joined yet. Their pledges and bills are already here; the link just gives them a
             login.
           </p>
-          <Button onClick={create} disabled={busy}>
-            <Link2 /> Create invite link
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={`${partner.name}'s email (optional)`}
+              aria-label="Partner's email"
+              className="h-8 w-56"
+            />
+            <Button onClick={create} pending={busy}>
+              <Link2 /> {email.trim() ? "Email the invite" : "Create invite link"}
+            </Button>
+          </div>
         </div>
       )}
       <p className="mt-3 text-[12px] text-ink-muted">

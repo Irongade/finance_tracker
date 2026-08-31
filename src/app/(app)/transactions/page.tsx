@@ -1,9 +1,10 @@
 "use client";
 
-import { Plus, ReceiptText } from "lucide-react";
+import { Plus, ReceiptText, Upload } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/domain/confirm-dialog";
+import { CsvImportDialog } from "@/components/domain/csv-import-dialog";
 import { EmptyState } from "@/components/domain/empty-state";
 import { MoneyText } from "@/components/domain/money-text";
 import { MonthSwitcher } from "@/components/domain/month-switcher";
@@ -22,6 +23,7 @@ export default function TransactionsPage() {
   const { open } = useQuickAdd();
   const [month, setMonth] = useState(monthOf(clock.today));
   const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   const types = useMemo(() => new Map(household.categories.map((c) => [c.id, c.type])), [household.categories]);
   const inMonth = useMemo(
@@ -63,6 +65,9 @@ export default function TransactionsPage() {
         actions={
           <>
             <MonthSwitcher month={month} onChange={setMonth} className="hidden md:inline-flex" />
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload /> Import CSV
+            </Button>
             <Button
               onClick={() => open({ date: isSameMonth(clock.today, month) ? clock.today : month })}
               className="hidden md:inline-flex"
@@ -134,6 +139,7 @@ export default function TransactionsPage() {
         </div>
       )}
 
+      <CsvImportDialog open={importOpen} onOpenChange={setImportOpen} />
       <ConfirmDialog
         open={pendingDelete !== null}
         onOpenChange={(o) => (o ? null : setPendingDelete(null))}

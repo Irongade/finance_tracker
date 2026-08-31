@@ -23,6 +23,8 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
   const [step, setStep] = useState(0);
   const [household, setHousehold] = useState("");
   const [names, setNames] = useState([defaultName, ""]);
+  const [partnerEmail, setPartnerEmail] = useState("");
+  const [invite, setInvite] = useState<{ url: string; emailed: boolean } | null>(null);
   const [incomes, setIncomes] = useState<(number | null)[]>([null, null]);
   const [mode, setMode] = useState<"import" | "blank">("import");
   const [file, setFile] = useState<File | null>(null);
@@ -46,6 +48,16 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
       setMembership(data.membership);
       const snap = await api<{ household: { users: { id: string }[] } }>({ method: "GET", url: "/api/household" });
       setMembers(snap.household.users);
+      try {
+        const inv = await api<{ url: string; emailed: boolean }>({
+          method: "POST",
+          url: "/api/invites",
+          body: partnerEmail.trim() ? { email: partnerEmail.trim() } : {},
+        });
+        setInvite(inv);
+      } catch {
+        // they can always invite later from Settings
+      }
       return true;
     } catch (e) {
       fail(e);
@@ -153,6 +165,17 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
               if you're importing the workbook.
             </p>
           </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="partner-email">Partner's email (optional)</Label>
+            <Input
+              id="partner-email"
+              type="email"
+              value={partnerEmail}
+              onChange={(e) => setPartnerEmail(e.target.value)}
+              placeholder="They get a one-time invite link to create their own login"
+              disabled={membership !== null}
+            />
+          </div>
           {[0, 1].map((i) => (
             <div key={i} className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
@@ -239,6 +262,37 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
 
       {step === 3 ? (
         <div className="grid gap-4">
+          {invite ? (
+            <div className="grid gap-1.5 rounded-lg bg-mint/60 p-3 text-[12.5px] text-fern">
+              <p className="font-medium">
+                {invite.emailed
+                  ? `Invite emailed to ${partnerEmail.trim()}.`
+                  : `Invite link for ${names[1]} (send it however you like):`}
+              </p>
+              <div className="flex items-center gap-2">
+                <Input
+                  readOnly
+                  value={invite.url}
+                  className="h-8 flex-1 bg-surface text-[12px]"
+                  aria-label="Invite link"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(invite.url);
+                    toast.success("Link copied");
+                  }}
+                >
+                  Copy
+                </Button>
+              </div>
+              <p className="text-fern/80">
+                Works once, expires in 48 hours. A fresh one is always available on Settings.
+              </p>
+            </div>
+          ) : null}
           <div>
             <h1 className="text-[20px] font-semibold text-navy">The 10-minute routine</h1>
             <p className="mt-1 text-[13px] text-ink-muted">Same as the spreadsheet, just from your phone.</p>
@@ -275,8 +329,8 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
           Back
         </Button>
         {step < STEPS.length - 1 ? (
-          <Button onClick={next} disabled={busy}>
-            {busy ? "Saving…" : "Continue"} <ArrowRight />
+          <Button onClick={next} pending={busy}>
+            Continue <ArrowRight />
           </Button>
         ) : (
           <Button

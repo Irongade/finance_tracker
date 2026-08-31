@@ -3,6 +3,7 @@
 import { Archive, Download, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { ChangePasswordCard } from "@/components/domain/change-password-card";
 import { TypeChip } from "@/components/domain/chips";
 import { InvitePartnerCard } from "@/components/domain/invite-partner-card";
 import { MoneyInput } from "@/components/domain/money-input";
@@ -300,6 +301,7 @@ export default function SettingsPage() {
         </SectionCard>
 
         <InvitePartnerCard />
+        <ChangePasswordCard />
       </div>
     </>
   );

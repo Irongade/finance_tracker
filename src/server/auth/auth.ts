@@ -12,6 +12,7 @@ import { nextCookies } from "better-auth/next-js";
 import { count } from "drizzle-orm";
 import { getDb } from "@/server/db/client";
 import * as s from "@/server/db/schema";
+import { sendEmail } from "@/server/email/send";
 import { getServices } from "@/server/services";
 
 export const INVITE_COOKIE = "ap_invite";
@@ -59,7 +60,24 @@ export const auth = betterAuth({
       rateLimit: s.authRateLimit,
     },
   }),
-  emailAndPassword: { enabled: true, minPasswordLength: 8, autoSignIn: true },
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: 8,
+    autoSignIn: true,
+    resetPasswordTokenExpiresIn: 60 * 60, // 1 hour
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your Ade & P password",
+        text: `Someone (hopefully you) asked to reset the password for ${user.email}.
+
+Reset it here (valid for 1 hour):
+${url}
+
+If this wasn't you, ignore this email; nothing changes.`,
+      });
+    },
+  },
   session: { expiresIn: 30 * DAY, updateAge: DAY },
   rateLimit: {
     enabled: true,

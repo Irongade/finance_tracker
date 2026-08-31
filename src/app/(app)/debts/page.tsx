@@ -141,12 +141,13 @@ export default function DebtsPage() {
         open={editing !== null}
         debt={editing === "new" ? null : editing}
         onOpenChange={(o) => (o ? null : setEditing(null))}
-        onSave={(debt) => {
-          dispatch(
+        onSave={async (debt) => {
+          const ok = await dispatch(
             view.debts.debts.some((d) => d.debt.id === debt.id)
               ? { type: "updateDebt", debt }
               : { type: "addDebt", debt },
           );
+          if (!ok) return;
           toast.success(editing === "new" ? "Debt added" : "Debt saved");
           setEditing(null);
         }}
@@ -194,7 +195,7 @@ function DebtDialog({
   open: boolean;
   debt: Debt | null;
   onOpenChange: (o: boolean) => void;
-  onSave: (d: Debt) => void;
+  onSave: (d: Debt) => unknown; // may return a promise; the dialog awaits it
   onDelete: (d: Debt) => void;
 }) {
   const { users } = useHousehold();
@@ -205,6 +206,7 @@ function DebtDialog({
   const [minPaymentPence, setMin] = useState<number | null>(debt?.minPaymentPence ?? null);
   const [extraPaymentPence, setExtra] = useState<number | null>(debt?.extraPaymentPence ?? 0);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -218,7 +220,8 @@ function DebtDialog({
         <form
           id="debt-form"
           className="grid gap-4"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
+            if (busy) return;
             e.preventDefault();
             const parsed = debtInputSchema.safeParse({
               ownerUserId,
@@ -232,7 +235,9 @@ function DebtDialog({
               setError(parsed.error.issues[0]?.message ?? "Check the form");
               return;
             }
-            onSave({ id: debt?.id ?? newId("debt"), ...parsed.data });
+            setBusy(true);
+            await onSave({ id: debt?.id ?? newId("debt"), ...parsed.data });
+            setBusy(false);
           }}
         >
           <div className="grid grid-cols-2 gap-3">
@@ -309,7 +314,7 @@ function DebtDialog({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" form="debt-form">
+            <Button type="submit" form="debt-form" pending={busy}>
               {debt ? "Save" : "Add debt"}
             </Button>
           </div>

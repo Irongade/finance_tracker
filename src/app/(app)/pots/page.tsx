@@ -79,9 +79,11 @@ export default function PotsPage() {
               latestMonth: g.savedMonth,
             }))}
             existing={existing}
-            onSave={(values) => {
-              dispatch({ type: "savePotSnapshots", month, balances: values });
-              toast.success("Snapshot saved", { description: `${formatMonth(month, "long")} balances updated.` });
+            onSave={async (values) => {
+              const ok = await dispatch({ type: "savePotSnapshots", month, balances: values });
+              if (ok)
+                toast.success("Snapshot saved", { description: `${formatMonth(month, "long")} balances updated.` });
+              return ok;
             }}
           />
         </SectionCard>

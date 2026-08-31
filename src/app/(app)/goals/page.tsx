@@ -136,8 +136,9 @@ export default function GoalsPage() {
         key={adding ? "open" : "closed"}
         open={adding}
         onOpenChange={setAdding}
-        onSave={(goal) => {
-          dispatch({ type: "addGoal", goal });
+        onSave={async (goal) => {
+          const ok = await dispatch({ type: "addGoal", goal });
+          if (!ok) return;
           toast.success("Goal added", { description: `${goal.name}. Enter its first balance on Pots.` });
           setAdding(false);
         }}
@@ -165,7 +166,7 @@ function GoalDialog({
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onSave: (goal: Goal) => void;
+  onSave: (goal: Goal) => unknown; // may return a promise; the dialog awaits it
 }) {
   const { users, household } = useHousehold();
   const [name, setName] = useState("");
@@ -175,6 +176,7 @@ function GoalDialog({
   const [aer, setAer] = useState("0");
   const [isEmergencyFund, setEmergency] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -186,7 +188,8 @@ function GoalDialog({
         <form
           id="goal-form"
           className="grid gap-4"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
+            if (busy) return;
             e.preventDefault();
             const parsed = goalInputSchema.safeParse({
               name,
@@ -202,13 +205,15 @@ function GoalDialog({
               return;
             }
             const id = newId("goal");
-            onSave({
+            setBusy(true);
+            await onSave({
               id,
               ...parsed.data,
               sort: household.goals.length + 1,
               archived: false,
               pledges: users.map((u) => ({ goalId: id, userId: u.id, monthlyPence: 0 })),
             });
+            setBusy(false);
           }}
         >
           <div className="grid gap-1.5">
@@ -269,7 +274,7 @@ function GoalDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="submit" form="goal-form">
+          <Button type="submit" form="goal-form" pending={busy}>
             Add goal
           </Button>
         </DialogFooter>

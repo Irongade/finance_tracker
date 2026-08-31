@@ -15,7 +15,15 @@ Phase 1 built every page in spec §7.4 on an in-memory store. Phase 2 replaced t
 - **Tests**: 23 golden tests (§12) on the engine, parser tests on the real workbook, a repository integration test against Postgres (migrates a test DB, imports, checks the golden dashboard and invariants), Playwright e2e for flows 1-3 (`e2e/flows.spec.ts`).
 - **Ops**: GitHub Actions CI (`lint`, `typecheck`, `test`, migrate, build, e2e), nightly `pg_dump` workflow with 30-day retention, restore steps in `docs/RUNBOOK.md`.
 
-Not yet: Vercel/Neon deployment (needs your accounts), TanStack Query (the store's own optimistic dispatch does the job; noted as a deviation from §7.1).
+Since then:
+
+- **Bank CSV import** on Transactions: upload or paste a statement, map columns once per bank (remembered), preview with learned category suggestions and duplicate flags, atomic bulk insert.
+- **PWA**: web manifest + icons; add it to your home screen and it opens standalone.
+- **Passwords**: forgot-password (emailed one-time reset link), change password in Settings (revokes other sessions).
+- **Invites by email**: onboarding takes your partner's email and sends the one-time link (also copyable); same from Settings. Email goes through Resend when `RESEND_API_KEY` is set, otherwise links are shown/logged.
+- **Feedback**: every submit shows a pending spinner and can't double-fire; dialogs close only after the server accepts; route-level error/loading/not-found pages.
+
+Not yet: TanStack Query (the store's own optimistic dispatch does the job; noted as a deviation from §7.1).
 
 ## Run it
 

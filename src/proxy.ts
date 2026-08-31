@@ -5,7 +5,15 @@ import { type NextRequest, NextResponse } from "next/server";
  * the (app) layout and every route handler. Public: auth pages, the auth API,
  * invite links and static assets.
  */
-const PUBLIC = [/^\/login$/, /^\/register$/, /^\/invite(\/.*)?$/, /^\/api\/auth(\/.*)?$/, /^\/api\/invites\/.+$/];
+const PUBLIC = [
+  /^\/login$/,
+  /^\/register$/,
+  /^\/forgot-password$/,
+  /^\/reset-password$/,
+  /^\/invite(\/.*)?$/,
+  /^\/api\/auth(\/.*)?$/,
+  /^\/api\/invites\/.+$/,
+];
 
 function hasSessionCookie(req: NextRequest): boolean {
   return req.cookies.has("better-auth.session_token") || req.cookies.has("__Secure-better-auth.session_token");

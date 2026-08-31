@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   title: { default: "Ade & P", template: "%s · Ade & P" },
   description: "Household finance tracker",
   applicationName: "Ade & P Finance Tracker",
+  icons: { icon: [{ url: "/icon-192.png", sizes: "192x192" }], apple: "/apple-icon.png" },
+  appleWebApp: { capable: true, title: "Ade & P", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

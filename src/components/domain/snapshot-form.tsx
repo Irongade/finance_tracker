@@ -23,7 +23,8 @@ export interface SnapshotFormProps {
   items: SnapshotItem[];
   /** values already saved for `month`, by item id */
   existing: Record<string, number>;
-  onSave: (values: Record<string, number>) => void;
+  /** resolves true when the server accepted the snapshot */
+  onSave: (values: Record<string, number>) => unknown; // may return a promise; awaited before the button releases
   noun: "balance" | "value";
 }
 
@@ -33,6 +34,7 @@ export interface SnapshotFormProps {
  */
 export function SnapshotForm({ month, onMonthChange, items, existing, onSave, noun }: SnapshotFormProps) {
   const [values, setValues] = useState<Record<string, number | null>>({});
+  const [busy, setBusy] = useState(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset the form when the month or saved values change
   useEffect(() => {
@@ -46,11 +48,14 @@ export function SnapshotForm({ month, onMonthChange, items, existing, onSave, no
   return (
     <form
       className="flex flex-col gap-4"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
+        if (busy) return;
         e.preventDefault();
         const out: Record<string, number> = {};
         for (const [id, v] of Object.entries(values)) if (v !== null) out[id] = v;
-        onSave(out);
+        setBusy(true);
+        await onSave(out);
+        setBusy(false);
       }}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -94,7 +99,7 @@ export function SnapshotForm({ month, onMonthChange, items, existing, onSave, no
         <p className="text-[13px] text-ink-muted">
           Total entered: <MoneyText pence={total} style="whole" className="text-navy" />
         </p>
-        <Button type="submit" disabled={filled === 0}>
+        <Button type="submit" disabled={filled === 0} pending={busy}>
           Save snapshot
         </Button>
       </div>

@@ -30,6 +30,7 @@ export function SettleUpDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const [date, setDate] = useState(clock.today);
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -59,7 +60,8 @@ export function SettleUpDialog({ open, onOpenChange }: { open: boolean; onOpenCh
         <form
           id="settle-up-form"
           className="flex flex-col gap-4"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
+            if (busy) return;
             e.preventDefault();
             const parsed = settlementInputSchema.safeParse({
               amountPence: amount,
@@ -72,7 +74,10 @@ export function SettleUpDialog({ open, onOpenChange }: { open: boolean; onOpenCh
               setError(parsed.error.issues[0]?.message ?? "Check the form");
               return;
             }
-            dispatch({ type: "addSettlement", settlement: { id: newId("stl"), ...parsed.data } });
+            setBusy(true);
+            const ok = await dispatch({ type: "addSettlement", settlement: { id: newId("stl"), ...parsed.data } });
+            setBusy(false);
+            if (!ok) return;
             toast.success("Settled up", {
               description: `${fromName} paid ${toName} ${formatPence(parsed.data.amountPence)}.`,
             });
@@ -125,7 +130,7 @@ export function SettleUpDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="submit" form="settle-up-form">
+          <Button type="submit" form="settle-up-form" pending={busy}>
             Record payment
           </Button>
         </DialogFooter>

@@ -50,6 +50,17 @@ export class TransactionService {
     };
   }
 
+  /** CSV import (section 8 flow 1 at scale): all rows validated with the same invariants, inserted in one transaction. */
+  async createMany(householdId: string, inputs: TransactionInput[]): Promise<Mutation<Transaction[]>> {
+    const h = await loadHousehold(this.deps, householdId);
+    const rows = inputs.map((input) => this.normalise(h, input));
+    return mutate(this.deps, householdId, async (tx) => {
+      const created: Transaction[] = [];
+      for (const row of rows) created.push(await this.deps.repos.transactions.insert(householdId, row, tx));
+      return created;
+    });
+  }
+
   async create(householdId: string, input: TransactionInput): Promise<Mutation<Transaction>> {
     const h = await loadHousehold(this.deps, householdId);
     const row = this.normalise(h, input);

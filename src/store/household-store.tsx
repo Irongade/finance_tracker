@@ -357,7 +357,8 @@ export interface HouseholdContextValue {
   clock: Clock;
   users: [User, User];
   currentUserId: string;
-  dispatch: (a: Action) => void;
+  /** Applies optimistically at once; the promise resolves true when the server accepted (debounced inline edits resolve immediately). */
+  dispatch: (a: Action) => Promise<boolean>;
   matrix: (startMonth: ISOMonth) => Matrix;
   userName: (id: string) => string;
   categoryName: (id: string) => string;
@@ -397,17 +398,19 @@ export function HouseholdProvider({ initial, children }: { initial: HouseholdIni
   }, []);
 
   const send = useCallback(
-    async (req: ApiRequest) => {
+    async (req: ApiRequest): Promise<boolean> => {
       inflightRef.current += 1;
       setInflight(inflightRef.current);
       try {
         const data = await api<{ household?: Household }>(req);
         if (data.household && inflightRef.current === 1 && pendingRef.current.size === 0)
           apply({ type: "replace", household: data.household });
+        return true;
       } catch (e) {
         const message = e instanceof Error ? e.message : "Something went wrong";
         toast.error("Not saved", { description: message });
         await refresh();
+        return false;
       } finally {
         inflightRef.current -= 1;
         setInflight(inflightRef.current);
@@ -428,15 +431,14 @@ export function HouseholdProvider({ initial, children }: { initial: HouseholdIni
   );
 
   const dispatch = useCallback(
-    (a: Action) => {
+    async (a: Action): Promise<boolean> => {
       const before = householdRef.current;
       apply(a);
       const req = actionToRequest(a, before);
-      if (!req) return;
+      if (!req) return true;
       const key = debounceKey(a);
       if (!key) {
-        void send(req);
-        return;
+        return send(req);
       }
       const existing = pendingRef.current.get(key);
       if (existing) clearTimeout(existing.timer);
@@ -445,6 +447,7 @@ export function HouseholdProvider({ initial, children }: { initial: HouseholdIni
         void send(req);
       }, DEBOUNCE_MS);
       pendingRef.current.set(key, { req, timer });
+      return true;
     },
     [send],
   );

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, Link2, Trash2, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/domain/confirm-dialog";
@@ -41,6 +41,7 @@ export function QuickAddSheet() {
   const { household, users, clock, currentUserId, dispatch } = useHousehold();
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [moreOpen, setMoreOpen] = useState(false);
+  const submittingRef = useRef(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const editing = prefill?.editing ?? null;
 
@@ -71,6 +72,7 @@ export function QuickAddSheet() {
 
   useEffect(() => {
     if (isOpen) {
+      submittingRef.current = false;
       reset(defaults);
       setMoreOpen(
         Boolean(
@@ -121,6 +123,8 @@ export function QuickAddSheet() {
   }, [suggestedBill, editing, setValue, categoryId]);
 
   const onSubmit = (data: TransactionInput) => {
+    if (submittingRef.current) return; // a double tap must not log twice
+    submittingRef.current = true;
     const txn: Transaction = {
       id: editing?.id ?? newId("txn"),
       ...data,

@@ -7,7 +7,7 @@
 | Local | Postgres.app 18, `postgresql://localhost:5432/finance_tracker` (+ `finance_tracker_test`) | `pnpm dev` |
 | Production | Neon (eu-west-2), pooled URL as `DATABASE_URL` on Vercel; locally kept as `DATABASE_URL_PROD` | Vercel hobby |
 
-Secrets live in `.env.local` locally and in Vercel env vars in production: `DATABASE_URL`, `BETTER_AUTH_SECRET` (32+ random bytes; a different one from local), `BETTER_AUTH_URL` (the public origin). Never set `FIXED_TODAY` in production.
+Optional email (password resets, invite emails): set `RESEND_API_KEY` (and `EMAIL_FROM` once you verify a domain in Resend); without it, reset links land in the server log and invite links are copy-paste. Secrets live in `.env.local` locally and in Vercel env vars in production: `DATABASE_URL`, `BETTER_AUTH_SECRET` (32+ random bytes; a different one from local), `BETTER_AUTH_URL` (the public origin). Never set `FIXED_TODAY` in production.
 
 ### Local vs production
 
