@@ -27,14 +27,19 @@ export function UserMenu({ compact = false, className }: { compact?: boolean; cl
         <Button
           variant="ghost"
           size={compact ? "icon" : "default"}
-          className={cn(compact ? "rounded-full" : "h-11 w-full justify-start gap-2.5 px-2.5", className)}
+          className={cn(
+            compact ? "rounded-full" : "h-11 w-full min-w-0 justify-start gap-2.5 overflow-hidden px-2.5",
+            className,
+          )}
           aria-label="Account menu"
         >
           <PersonBadge owner={{ kind: "user", userId: me.id }} users={users} size="md" />
           {!compact ? (
-            <span className="flex min-w-0 flex-col items-start leading-tight">
-              <span className="truncate text-[13px] font-semibold text-ink">{me.name}</span>
-              <span className="truncate text-[11.5px] text-ink-muted">{saving ? "Saving…" : (me.email ?? "")}</span>
+            <span className="flex w-full min-w-0 flex-col items-start leading-tight">
+              <span className="max-w-full truncate text-[13px] font-semibold text-ink">{me.name}</span>
+              <span className="max-w-full truncate text-[11.5px] text-ink-muted">
+                {saving ? "Saving…" : (me.email ?? "")}
+              </span>
             </span>
           ) : null}
         </Button>

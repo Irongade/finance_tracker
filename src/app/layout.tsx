@@ -17,11 +17,11 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Ade & P", template: "%s · Ade & P" },
+  title: { default: "Finance Tracker", template: "%s · Finance Tracker" },
   description: "Household finance tracker",
-  applicationName: "Ade & P Finance Tracker",
+  applicationName: "Finance Tracker",
   icons: { icon: [{ url: "/icon-192.png", sizes: "192x192" }], apple: "/apple-icon.png" },
-  appleWebApp: { capable: true, title: "Ade & P", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Finance Tracker", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

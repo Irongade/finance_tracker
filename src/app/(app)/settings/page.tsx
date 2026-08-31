@@ -49,6 +49,18 @@ export default function SettingsPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <SectionCard title="Names">
           <div className="grid gap-3">
+            <div className="grid gap-1.5">
+              <Label htmlFor="app-name">App name</Label>
+              <Input
+                id="app-name"
+                value={household.name}
+                onChange={(e) => dispatch({ type: "updateHouseholdName", name: e.target.value })}
+                placeholder="Finance Tracker"
+              />
+              <p className="text-[11.5px] text-ink-muted">
+                Shown in the sidebar and on invites. Call it whatever you like.
+              </p>
+            </div>
             {users.map((u, i) => (
               <div key={u.id} className="grid gap-1.5">
                 <Label htmlFor={`name-${u.id}`} className="flex items-center gap-1.5">

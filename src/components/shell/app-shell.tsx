@@ -6,16 +6,18 @@ import type { ReactNode } from "react";
 import { QuickAddProvider, useQuickAdd } from "@/components/domain/quick-add-context";
 import { QuickAddSheet } from "@/components/domain/quick-add-sheet";
 import { Button } from "@/components/ui/button";
-import { type HouseholdInitial, HouseholdProvider } from "@/store/household-store";
+import { type HouseholdInitial, HouseholdProvider, useHousehold } from "@/store/household-store";
 import { BottomTabs } from "./bottom-tabs";
 import { Sidebar } from "./sidebar";
 import { UserMenu } from "./user-menu";
 
 function MobileTopBar() {
+  const { household } = useHousehold();
+  const brand = household.name.trim() || "Finance Tracker";
   return (
     <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b border-hairline bg-paper/90 px-4 backdrop-blur md:hidden">
-      <Link href="/" className="display text-[18px] leading-none text-navy">
-        Ade &amp; P
+      <Link href="/" className="display min-w-0 truncate text-[18px] leading-none text-navy">
+        {brand}
       </Link>
       <UserMenu compact />
     </header>

@@ -122,12 +122,17 @@ export default function BillsPage() {
         open={editing !== null}
         bill={editing === "new" ? null : editing}
         onOpenChange={(o) => (o ? null : setEditing(null))}
-        onSave={async (bill) => {
-          const ok = await dispatch(
-            household.bills.some((b) => b.id === bill.id) ? { type: "updateBill", bill } : { type: "addBill", bill },
+        onSave={async (bills) => {
+          for (const bill of bills) {
+            const ok = await dispatch(
+              household.bills.some((b) => b.id === bill.id) ? { type: "updateBill", bill } : { type: "addBill", bill },
+            );
+            if (!ok) return;
+          }
+          toast.success(
+            editing === "new" ? (bills.length > 1 ? "Bills added for both of you" : "Bill added") : "Bill saved",
+            { description: bills[0]?.name },
           );
-          if (!ok) return;
-          toast.success(editing === "new" ? "Bill added" : "Bill saved", { description: bill.name });
           setEditing(null);
         }}
         onArchive={(id) => {
@@ -150,7 +155,8 @@ function BillDialog({
   open: boolean;
   bill: Bill | null;
   onOpenChange: (o: boolean) => void;
-  onSave: (bill: Bill) => unknown; // may return a promise; the dialog awaits it
+  /** one bill, or one per member when "Both" is picked */
+  onSave: (bills: Bill[]) => unknown; // may return a promise; the dialog awaits it
   onArchive: (id: string) => void;
 }) {
   const { household, users } = useHousehold();
@@ -162,14 +168,15 @@ function BillDialog({
   const [categoryId, setCategoryId] = useState(bill?.categoryId ?? "");
   const [monthlyPence, setMonthlyPence] = useState<number | null>(bill?.monthlyPence ?? null);
   const [dueDay, setDueDay] = useState<string>(bill?.dueDay?.toString() ?? "");
-  const [owner, setOwner] = useState<Owner>(bill?.owner ?? { kind: "joint" });
+  const [owner, setOwner] = useState<Owner | { kind: "both" }>(bill?.owner ?? { kind: "joint" });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const ownerOptions: Owner[] = [
+  const ownerOptions: (Owner | { kind: "both" })[] = [
     { kind: "joint" },
     { kind: "user", userId: users[0].id },
     { kind: "user", userId: users[1].id },
+    ...(bill ? [] : [{ kind: "both" } as const]),
   ];
 
   return (
@@ -185,22 +192,37 @@ function BillDialog({
           id="bill-form"
           className="grid gap-4"
           onSubmit={async (e) => {
-            if (busy) return;
             e.preventDefault();
-            const parsed = billInputSchema.safeParse({
-              name,
-              categoryId,
-              monthlyPence,
-              dueDay: dueDay === "" ? null : Number(dueDay),
-              owner,
-              notes: bill?.notes ?? null,
-            });
-            if (!parsed.success) {
-              setError(parsed.error.issues[0]?.message ?? "Check the form");
-              return;
+            if (busy) return;
+            const owners: Owner[] =
+              owner.kind === "both"
+                ? [
+                    { kind: "user", userId: users[0].id },
+                    { kind: "user", userId: users[1].id },
+                  ]
+                : [owner];
+            const bills: Bill[] = [];
+            for (const o of owners) {
+              const parsed = billInputSchema.safeParse({
+                name,
+                categoryId,
+                monthlyPence,
+                dueDay: dueDay === "" ? null : Number(dueDay),
+                owner: o,
+                notes: bill?.notes ?? null,
+              });
+              if (!parsed.success) {
+                setError(parsed.error.issues[0]?.message ?? "Check the form");
+                return;
+              }
+              bills.push({
+                id: bills.length === 0 ? (bill?.id ?? newId("bill")) : newId("bill"),
+                archived: false,
+                ...parsed.data,
+              });
             }
             setBusy(true);
-            await onSave({ id: bill?.id ?? newId("bill"), archived: false, ...parsed.data });
+            await onSave(bills);
             setBusy(false);
           }}
         >
@@ -250,14 +272,19 @@ function BillDialog({
             </div>
             <div className="grid gap-1.5">
               <Label>Paid by</Label>
-              <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label="Paid by">
+              <div
+                className={cn("grid gap-1", bill ? "grid-cols-3" : "grid-cols-4")}
+                role="radiogroup"
+                aria-label="Paid by"
+              >
                 {ownerOptions.map((o) => {
                   const selected =
                     o.kind === owner.kind &&
-                    (o.kind === "joint" || (owner.kind === "user" && owner.userId === o.userId));
+                    (o.kind !== "user" || (owner.kind === "user" && owner.userId === o.userId));
                   return (
                     <button
-                      key={o.kind === "joint" ? "joint" : o.userId}
+                      key={o.kind === "user" ? o.userId : o.kind}
+                      title={o.kind === "both" ? "One personal bill each" : undefined}
                       type="button"
                       role="radio"
                       aria-checked={selected}
@@ -267,11 +294,23 @@ function BillDialog({
                         selected ? "border-blue bg-blue/8 text-navy" : "border-hairline hover:bg-row-hover",
                       )}
                     >
-                      <PersonBadge owner={o} users={users} size="xs" />
+                      {o.kind === "both" ? (
+                        <>
+                          <PersonBadge owner={{ kind: "user", userId: users[0].id }} users={users} size="xs" />
+                          <PersonBadge owner={{ kind: "user", userId: users[1].id }} users={users} size="xs" />
+                        </>
+                      ) : (
+                        <PersonBadge owner={o} users={users} size="xs" />
+                      )}
                     </button>
                   );
                 })}
               </div>
+              {owner.kind === "both" ? (
+                <p className="text-[11.5px] text-ink-muted">
+                  Creates a personal bill for each of you at this amount per person (like rent paid separately).
+                </p>
+              ) : null}
             </div>
           </div>
           {error ? <p className="text-[12.5px] font-medium text-brick">{error}</p> : null}

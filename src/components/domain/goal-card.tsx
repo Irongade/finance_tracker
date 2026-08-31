@@ -1,6 +1,6 @@
 "use client";
 
-import { Archive, ArrowRightLeft, Ellipsis, ShieldCheck, TriangleAlert } from "lucide-react";
+import { Archive, ArrowRightLeft, Ellipsis, Pencil, ShieldCheck, TriangleAlert } from "lucide-react";
 import { Chip, GoalStatusChip } from "@/components/domain/chips";
 import { MoneyInput } from "@/components/domain/money-input";
 import { MoneyText } from "@/components/domain/money-text";
@@ -23,6 +23,7 @@ export interface GoalCardProps {
   users: [User, User];
   lisaAnnualAllowancePence: number;
   onPledgeChange: (userId: string, monthlyPence: number) => void;
+  onEdit: () => void;
   onArchive: () => void;
   onSetEmergency: () => void;
   onLogTransfer: () => void;
@@ -33,6 +34,7 @@ export function GoalCard({
   users,
   lisaAnnualAllowancePence,
   onPledgeChange,
+  onEdit,
   onArchive,
   onSetEmergency,
   onLogTransfer,
@@ -70,6 +72,9 @@ export function GoalCard({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={onEdit}>
+              <Pencil /> Edit goal
+            </DropdownMenuItem>
             <DropdownMenuItem onSelect={onLogTransfer}>
               <ArrowRightLeft /> Log a transfer
             </DropdownMenuItem>

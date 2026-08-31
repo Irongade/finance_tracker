@@ -49,8 +49,8 @@ export function SnapshotForm({ month, onMonthChange, items, existing, onSave, no
     <form
       className="flex flex-col gap-4"
       onSubmit={async (e) => {
-        if (busy) return;
         e.preventDefault();
+        if (busy) return;
         const out: Record<string, number> = {};
         for (const [id, v] of Object.entries(values)) if (v !== null) out[id] = v;
         setBusy(true);

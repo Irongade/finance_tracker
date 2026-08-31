@@ -380,8 +380,8 @@ function AccountDialog({
           id="inv-form"
           className="grid gap-4"
           onSubmit={async (e) => {
-            if (busy) return;
             e.preventDefault();
+            if (busy) return;
             const parsed = investmentAccountInputSchema.safeParse({
               name,
               provider,

@@ -46,6 +46,7 @@ export type Action =
   | { type: "saveNetWorthSnapshot"; month: ISOMonth; valuePence: number }
   | { type: "updateSettings"; patch: Partial<Settings> }
   | { type: "updateUserName"; userId: string; name: string }
+  | { type: "updateHouseholdName"; name: string }
   | { type: "updatePledge"; goalId: string; userId: string; monthlyPence: number }
   | { type: "addGoal"; goal: Goal }
   | { type: "updateGoal"; goal: Goal }
@@ -122,6 +123,8 @@ export function reducer(h: Household, a: Action): Household {
     }
     case "updateSettings":
       return { ...h, settings: { ...h.settings, ...a.patch } };
+    case "updateHouseholdName":
+      return { ...h, name: a.name };
     case "updateUserName":
       return { ...h, users: h.users.map((u) => (u.id === a.userId ? { ...u, name: a.name } : u)) as [User, User] };
     case "updatePledge":
@@ -247,6 +250,8 @@ export function actionToRequest(a: Action, before: Household): ApiRequest | null
       return { method: "PUT", url: "/api/net-worth-snapshots", body: { month: a.month, valuePence: a.valuePence } };
     case "updateSettings":
       return { method: "PATCH", url: "/api/settings", body: a.patch };
+    case "updateHouseholdName":
+      return { method: "PATCH", url: "/api/household", body: { name: a.name } };
     case "updateUserName":
       return { method: "PATCH", url: "/api/household", body: { members: [{ id: a.userId, name: a.name }] } };
     case "updatePledge":
@@ -333,6 +338,8 @@ function debounceKey(a: Action): string | null {
       return `invest:${a.account.id}`;
     case "updateSettings":
       return "settings";
+    case "updateHouseholdName":
+      return "household-name";
     case "updateUserName":
       return `name:${a.userId}`;
     case "updateCategory":

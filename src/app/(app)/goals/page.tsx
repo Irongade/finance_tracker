@@ -34,7 +34,7 @@ import { newId, useHousehold } from "@/store/household-store";
 export default function GoalsPage() {
   const { view, users, household, dispatch, transferCategoryId } = useHousehold();
   const { open } = useQuickAdd();
-  const [adding, setAdding] = useState(false);
+  const [goalDialog, setGoalDialog] = useState<"new" | Goal | null>(null);
   const [archiving, setArchiving] = useState<Goal | null>(null);
   const goals = view.goals.goals;
 
@@ -44,7 +44,7 @@ export default function GoalsPage() {
         title="Goals"
         description="The pots you both pay into. Saved so far is anchored to the latest balance on Pots, never to pledges."
         actions={
-          <Button onClick={() => setAdding(true)}>
+          <Button onClick={() => setGoalDialog("new")}>
             <Plus /> Add goal
           </Button>
         }
@@ -62,7 +62,7 @@ export default function GoalsPage() {
             title="No goals yet"
             description="Add a savings goal to track pledges, the LISA bonus and whether you're on track."
             action={
-              <Button onClick={() => setAdding(true)}>
+              <Button onClick={() => setGoalDialog("new")}>
                 <Plus /> Add goal
               </Button>
             }
@@ -79,6 +79,7 @@ export default function GoalsPage() {
               onPledgeChange={(userId, monthlyPence) =>
                 dispatch({ type: "updatePledge", goalId: g.goal.id, userId, monthlyPence })
               }
+              onEdit={() => setGoalDialog(g.goal)}
               onArchive={() => setArchiving(g.goal)}
               onSetEmergency={() => {
                 dispatch({ type: "setEmergencyFund", id: g.goal.id });
@@ -133,14 +134,18 @@ export default function GoalsPage() {
       ) : null}
 
       <GoalDialog
-        key={adding ? "open" : "closed"}
-        open={adding}
-        onOpenChange={setAdding}
+        key={goalDialog === null ? "closed" : goalDialog === "new" ? "new" : goalDialog.id}
+        open={goalDialog !== null}
+        goal={goalDialog === "new" ? null : goalDialog}
+        onOpenChange={(o) => (o ? null : setGoalDialog(null))}
         onSave={async (goal) => {
-          const ok = await dispatch({ type: "addGoal", goal });
+          const isNew = goalDialog === "new";
+          const ok = await dispatch(isNew ? { type: "addGoal", goal } : { type: "updateGoal", goal });
           if (!ok) return;
-          toast.success("Goal added", { description: `${goal.name}. Enter its first balance on Pots.` });
-          setAdding(false);
+          toast.success(isNew ? "Goal added" : "Goal saved", {
+            description: isNew ? `${goal.name}. Enter its first balance on Pots.` : goal.name,
+          });
+          setGoalDialog(null);
         }}
       />
       <ConfirmDialog
@@ -161,20 +166,23 @@ export default function GoalsPage() {
 
 function GoalDialog({
   open,
+  goal,
   onOpenChange,
   onSave,
 }: {
   open: boolean;
+  /** null = create; otherwise the goal being edited */
+  goal: Goal | null;
   onOpenChange: (o: boolean) => void;
   onSave: (goal: Goal) => unknown; // may return a promise; the dialog awaits it
 }) {
   const { users, household } = useHousehold();
-  const [name, setName] = useState("");
-  const [type, setType] = useState<GoalType>("standard");
-  const [targetPence, setTargetPence] = useState<number | null>(null);
-  const [targetMonth, setTargetMonth] = useState("");
-  const [aer, setAer] = useState("0");
-  const [isEmergencyFund, setEmergency] = useState(false);
+  const [name, setName] = useState(goal?.name ?? "");
+  const [type, setType] = useState<GoalType>(goal?.type ?? "standard");
+  const [targetPence, setTargetPence] = useState<number | null>(goal?.targetPence ?? null);
+  const [targetMonth, setTargetMonth] = useState(goal ? goal.targetDate.slice(0, 7) : "");
+  const [aer, setAer] = useState(goal ? String(goal.aer * 100) : "0");
+  const [isEmergencyFund, setEmergency] = useState(goal?.isEmergencyFund ?? false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -182,15 +190,19 @@ function GoalDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add a goal</DialogTitle>
-          <DialogDescription>Pledges start at £0 for both of you; set them on the card afterwards.</DialogDescription>
+          <DialogTitle>{goal ? "Edit goal" : "Add a goal"}</DialogTitle>
+          <DialogDescription>
+            {goal
+              ? "Pledges are edited on the card itself."
+              : "Pledges start at £0 for both of you; set them on the card afterwards."}
+          </DialogDescription>
         </DialogHeader>
         <form
           id="goal-form"
           className="grid gap-4"
           onSubmit={async (e) => {
-            if (busy) return;
             e.preventDefault();
+            if (busy) return;
             const parsed = goalInputSchema.safeParse({
               name,
               type,
@@ -204,14 +216,14 @@ function GoalDialog({
               setError(parsed.error.issues[0]?.message ?? "Check the form");
               return;
             }
-            const id = newId("goal");
+            const id = goal?.id ?? newId("goal");
             setBusy(true);
             await onSave({
               id,
               ...parsed.data,
-              sort: household.goals.length + 1,
-              archived: false,
-              pledges: users.map((u) => ({ goalId: id, userId: u.id, monthlyPence: 0 })),
+              sort: goal?.sort ?? household.goals.length + 1,
+              archived: goal?.archived ?? false,
+              pledges: goal?.pledges ?? users.map((u) => ({ goalId: id, userId: u.id, monthlyPence: 0 })),
             });
             setBusy(false);
           }}
@@ -275,7 +287,7 @@ function GoalDialog({
             Cancel
           </Button>
           <Button type="submit" form="goal-form" pending={busy}>
-            Add goal
+            {goal ? "Save" : "Add goal"}
           </Button>
         </DialogFooter>
       </DialogContent>

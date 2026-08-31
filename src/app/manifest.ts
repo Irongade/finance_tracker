@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Ade & P Finance Tracker",
-    short_name: "Ade & P",
+    name: "Finance Tracker",
+    short_name: "Finances",
     description: "Household ledger: spending, bills, goals, pots and net worth.",
     start_url: "/",
     display: "standalone",

@@ -138,7 +138,17 @@ export function BillsTable({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 {showOwner ? <PersonBadge owner={b.bill.owner} users={users} size="xs" /> : null}
-                <p className="truncate text-[13.5px] font-medium text-ink">{b.bill.name}</p>
+                {onEdit ? (
+                  <button
+                    type="button"
+                    onClick={() => onEdit(b)}
+                    className="truncate text-left text-[13.5px] font-medium text-ink underline-offset-2 focus-visible:ring-3 focus-visible:ring-ring/50 active:underline"
+                  >
+                    {b.bill.name}
+                  </button>
+                ) : (
+                  <p className="truncate text-[13.5px] font-medium text-ink">{b.bill.name}</p>
+                )}
               </div>
               <p className="mt-0.5 text-[12px] text-ink-muted">
                 {b.categoryName}

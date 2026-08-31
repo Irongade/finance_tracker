@@ -61,8 +61,8 @@ export function SettleUpDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           id="settle-up-form"
           className="flex flex-col gap-4"
           onSubmit={async (e) => {
-            if (busy) return;
             e.preventDefault();
+            if (busy) return;
             const parsed = settlementInputSchema.safeParse({
               amountPence: amount,
               fromUserId,

@@ -221,8 +221,8 @@ function DebtDialog({
           id="debt-form"
           className="grid gap-4"
           onSubmit={async (e) => {
-            if (busy) return;
             e.preventDefault();
+            if (busy) return;
             const parsed = debtInputSchema.safeParse({
               ownerUserId,
               lender,
