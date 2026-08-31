@@ -25,13 +25,13 @@ export default function RegisterPage() {
         setBusy(true);
         setError(null);
         const { error } = await authClient.signUp.email({ name, email, password });
-        setBusy(false);
         if (error) {
+          setBusy(false);
           setError(error.message ?? "Could not create the account.");
           return;
         }
+        // stay busy until onboarding takes over
         router.push("/onboarding");
-        router.refresh();
       }}
     >
       <div>

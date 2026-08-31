@@ -32,13 +32,13 @@ export function InviteForm({
         setBusy(true);
         setError(null);
         const { error } = await authClient.signUp.email({ name, email, password });
-        setBusy(false);
         if (error) {
+          setBusy(false);
           setError(error.message ?? "Could not create the account.");
           return;
         }
+        // stay busy until the dashboard takes over
         router.push("/dashboard");
-        router.refresh();
       }}
     >
       <div>

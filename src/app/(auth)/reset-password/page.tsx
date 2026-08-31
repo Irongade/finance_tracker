@@ -47,12 +47,13 @@ function ResetPasswordForm() {
         setBusy(true);
         setError(null);
         const { error } = await authClient.resetPassword({ newPassword: password, token });
-        setBusy(false);
         if (error) {
+          setBusy(false);
           setError(error.message ?? "Could not reset the password. The link may have expired.");
           return;
         }
         toast.success("Password changed", { description: "Sign in with the new one." });
+        // stay busy through the hand-off to sign-in
         router.push("/login");
       }}
     >

@@ -25,8 +25,8 @@ function LoginForm() {
         setBusy(true);
         setError(null);
         const { error } = await authClient.signIn.email({ email, password });
-        setBusy(false);
         if (error) {
+          setBusy(false);
           setError(
             error.status === 429
               ? "Too many attempts. Wait a minute and try again."
@@ -35,8 +35,8 @@ function LoginForm() {
           return;
         }
         const next = params.get("next");
+        // stay busy: the dashboard render is the slow part; this page unmounts when it lands
         router.push(next?.startsWith("/") ? next : "/dashboard");
-        router.refresh();
       }}
     >
       <div>
