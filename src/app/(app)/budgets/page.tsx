@@ -1,5 +1,7 @@
 "use client";
 
+import { Tags } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Figure, LedgerSentence } from "@/components/domain/ledger-sentence";
 import { MatrixTable } from "@/components/domain/matrix-table";
@@ -9,6 +11,7 @@ import { MonthSwitcher } from "@/components/domain/month-switcher";
 import { ProgressBar } from "@/components/domain/progress-bar";
 import { SectionCard } from "@/components/domain/section-card";
 import { PageHeader } from "@/components/shell/page-header";
+import { Button } from "@/components/ui/button";
 import { formatMonth, monthOf } from "@/domain/dates";
 import { formatPence } from "@/domain/money";
 import type { MatrixRow } from "@/domain/types";
@@ -33,10 +36,17 @@ export default function BudgetsPage() {
         title="Budgets"
         description="Budget vs actual, 12 rolling months. Fixed budgets come from the bills tables; set variable budgets here. Red = over budget that month."
         actions={
-          <div className="hidden items-center gap-2 md:flex">
-            <span className="text-[12.5px] text-ink-muted">Start month</span>
-            <MonthSwitcher month={startMonth} onChange={setStartMonth} />
-          </div>
+          <>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/settings?tab=categories">
+                <Tags /> Manage categories
+              </Link>
+            </Button>
+            <div className="hidden items-center gap-2 md:flex">
+              <span className="text-[12.5px] text-ink-muted">Start month</span>
+              <MonthSwitcher month={startMonth} onChange={setStartMonth} todayMonth={currentMonth} />
+            </div>
+          </>
         }
       />
       <LedgerSentence className="mb-6">

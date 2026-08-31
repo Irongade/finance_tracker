@@ -1,0 +1,2 @@
+ALTER TABLE "settings" ADD COLUMN "gross_annual_income_user1_pence" bigint DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "settings" ADD COLUMN "gross_annual_income_user2_pence" bigint DEFAULT 0 NOT NULL;

@@ -106,6 +106,8 @@ export const settingsPatchSchema = z.object({
   lisaBonusRate: z.number().min(0).max(1).optional(),
   lisaAnnualAllowancePence: z.number().int().min(0).optional(),
   mortgageMultiple: z.number().min(0).max(10).optional(),
+  grossAnnualIncomeUser1Pence: z.number().int().min(0).optional(),
+  grossAnnualIncomeUser2Pence: z.number().int().min(0).optional(),
 });
 
 // --- household / onboarding / catalogue bodies (section 6) ---------------------

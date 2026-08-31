@@ -161,6 +161,18 @@ describe("behavioural criteria", () => {
     expect(computeHouseholdView(h, clock).settleUp.direction).toBe("square");
   });
 
+  it("gross salaries drive the mortgage; take-home x 12 is only the fallback", () => {
+    expect(view.affordability.usesGrossIncome).toBe(false); // seed has no gross set -> workbook behaviour
+    const h = cloneSeed();
+    h.settings.grossAnnualIncomeUser1Pence = 5_000_000; // £50,000
+    h.settings.grossAnnualIncomeUser2Pence = 3_800_000; // £38,000
+    const v = computeHouseholdView(h, clock);
+    expect(v.affordability.usesGrossIncome).toBe(true);
+    expect(pounds(v.affordability.mortgagePence)).toBe("£396,000"); // 4.5 x £88,000
+    // leftovers still run on take-home
+    expect(pounds(v.persons[0].leftoverPence)).toBe("£1,468");
+  });
+
   it("a £400/mo LISA pledge shows the allowance warning", () => {
     const h = cloneSeed();
     const lisa = h.goals.find((g) => g.id === GOAL.adeLisa);

@@ -40,6 +40,9 @@ export interface Settings {
   lisaAnnualAllowancePence: Pence;
   /** 4.5 */
   mortgageMultiple: number;
+  /** gross annual salaries for the mortgage estimate; 0 = fall back to take-home x 12 */
+  grossAnnualIncomeUser1Pence: Pence;
+  grossAnnualIncomeUser2Pence: Pence;
 }
 
 export type CategoryType = "fixed" | "variable" | "transfer";
@@ -362,6 +365,8 @@ export interface Forecast {
 }
 
 export interface Affordability {
+  /** true when the mortgage estimate used gross salaries; false = take-home x 12 fallback */
+  usesGrossIncome: boolean;
   pots12Pence: Pence;
   pots24Pence: Pence;
   housePot12Pence: Pence;

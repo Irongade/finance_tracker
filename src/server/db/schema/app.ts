@@ -99,6 +99,9 @@ export const settings = pgTable(
     lisaBonusRate: numeric({ precision: 5, scale: 4, mode: "number" }).notNull().default(0.25),
     lisaAnnualAllowancePence: pence().notNull().default(400_000),
     mortgageMultiple: numeric({ precision: 4, scale: 2, mode: "number" }).notNull().default(4.5),
+    /** gross annual salaries for the mortgage estimate; 0 = fall back to take-home x 12 */
+    grossAnnualIncomeUser1Pence: pence().notNull().default(0),
+    grossAnnualIncomeUser2Pence: pence().notNull().default(0),
     ...timestamps,
   },
   (t) => [uniqueIndex("settings_household_idx").on(t.householdId)],

@@ -73,6 +73,8 @@ export const seedHousehold: Household = {
     lisaBonusRate: 0.25,
     lisaAnnualAllowancePence: 400_000,
     mortgageMultiple: 4.5,
+    grossAnnualIncomeUser1Pence: 0,
+    grossAnnualIncomeUser2Pence: 0,
   },
   categories: [
     { id: CATEGORY.rent, name: "Rent", type: "fixed", sort: 1, archived: false },

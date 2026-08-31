@@ -420,7 +420,7 @@ export default function DashboardPage() {
             value={<MoneyText pence={view.affordability.housePot24Pence} style="whole" />}
           />
           <LineItem
-            label={`Rough mortgage at ${household.settings.mortgageMultiple}× joint income`}
+            label={`Rough mortgage at ${household.settings.mortgageMultiple}× joint ${view.affordability.usesGrossIncome ? "gross income" : "take-home ×12"}`}
             value={<MoneyText pence={view.affordability.mortgagePence} style="whole" />}
           />
           <LineItem

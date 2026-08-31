@@ -132,6 +132,8 @@ export class HouseholdRepository {
           lisaBonusRate: r.lisaBonusRate,
           lisaAnnualAllowancePence: r.lisaAnnualAllowancePence,
           mortgageMultiple: r.mortgageMultiple,
+          grossAnnualIncomeUser1Pence: r.grossAnnualIncomeUser1Pence,
+          grossAnnualIncomeUser2Pence: r.grossAnnualIncomeUser2Pence,
         }
       : null;
   }

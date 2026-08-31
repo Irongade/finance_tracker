@@ -346,7 +346,7 @@ function debounceKey(a: Action): string | null {
     case "updateInvestmentAccount":
       return `invest:${a.account.id}`;
     case "updateSettings":
-      return "settings";
+      return `settings:${Object.keys(a.patch).sort().join(",")}`;
     case "updateHouseholdName":
       return "household-name";
     case "updateUserName":
