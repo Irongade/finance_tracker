@@ -1,4 +1,6 @@
-# Ade & P Finance Tracker
+# Daybook
+
+*The household daybook for two.*
 
 A two-user household finance web app that replicates the v2 spreadsheet exactly: same data, same calculations, same monthly routine, online and mobile-friendly. The full specification is in [`docs/SPEC.md`](docs/SPEC.md) (v1.2).
 

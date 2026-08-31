@@ -17,7 +17,7 @@ export interface EmailResult {
 
 export async function sendEmail(message: EmailMessage): Promise<EmailResult> {
   const key = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM ?? "Ade & P <onboarding@resend.dev>";
+  const from = process.env.EMAIL_FROM ?? "Daybook <onboarding@resend.dev>";
   if (!key) {
     console.info(`[email not configured] to=${message.to} subject="${message.subject}"\n${message.text}`);
     return { delivered: false, reason: "RESEND_API_KEY is not set" };

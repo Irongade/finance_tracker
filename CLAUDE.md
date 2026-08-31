@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# Ade & P Finance Tracker
+# Daybook (finance tracker)
 
 Spec: `docs/SPEC.md` (v1.2) is the source of truth; the v2 workbook in `data/` (gitignored) is the functional reference and the seed.
 

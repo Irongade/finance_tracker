@@ -70,7 +70,7 @@ function SettingsContent() {
                     id="app-name"
                     value={household.name}
                     onChange={(e) => dispatch({ type: "updateHouseholdName", name: e.target.value })}
-                    placeholder="Finance Tracker"
+                    placeholder="Daybook"
                   />
                   <p className="text-[11.5px] text-ink-muted">
                     Shown in the sidebar and on invites. Call it whatever you like.

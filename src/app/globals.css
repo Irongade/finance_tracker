@@ -190,3 +190,72 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* --- landing page: "the workbook, typeset" ---------------------------------- */
+
+@utility rise {
+  animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ruled account-book paper */
+@utility ledger-paper {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 31px,
+    color-mix(in oklch, var(--workbook-blue) 10%, transparent) 31px,
+    color-mix(in oklch, var(--workbook-blue) 10%, transparent) 32px
+  );
+}
+
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* the settle-up sentence resolving itself, on a loop */
+@keyframes settle-owes {
+  0%,
+  38% {
+    opacity: 1;
+    transform: none;
+  }
+  46%,
+  92% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes settle-square {
+  0%,
+  38% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  46%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

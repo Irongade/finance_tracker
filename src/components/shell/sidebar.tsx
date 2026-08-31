@@ -12,7 +12,7 @@ import { UserMenu } from "./user-menu";
 export function Sidebar() {
   const pathname = usePathname();
   const { clock, household } = useHousehold();
-  const brand = household.name.trim() || "Finance Tracker";
+  const brand = household.name.trim() || "Daybook";
   const { items } = useNavOrder();
   return (
     <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-hairline bg-surface md:flex">

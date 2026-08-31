@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Finance Tracker",
-    short_name: "Finances",
+    name: "Daybook",
+    short_name: "Daybook",
     description: "Household ledger: spending, bills, goals, pots and net worth.",
     start_url: "/dashboard",
     display: "standalone",

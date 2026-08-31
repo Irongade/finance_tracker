@@ -46,7 +46,7 @@ async function authUserCount(): Promise<number> {
 }
 
 export const auth = betterAuth({
-  appName: "Ade & P",
+  appName: "Daybook",
   baseURL: origin.baseURL,
   secret: process.env.BETTER_AUTH_SECRET,
   trustedOrigins: origin.trustedOrigins,
@@ -68,7 +68,7 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
-        subject: "Reset your Ade & P password",
+        subject: "Reset your Daybook password",
         text: `Someone (hopefully you) asked to reset the password for ${user.email}.
 
 Reset it here (valid for 1 hour):

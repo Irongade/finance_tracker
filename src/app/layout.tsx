@@ -17,11 +17,11 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Finance Tracker", template: "%s · Finance Tracker" },
+  title: { default: "Daybook", template: "%s · Daybook" },
   description: "Household finance tracker",
-  applicationName: "Finance Tracker",
+  applicationName: "Daybook",
   icons: { icon: [{ url: "/icon-192.png", sizes: "192x192" }], apple: "/apple-icon.png" },
-  appleWebApp: { capable: true, title: "Finance Tracker", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Daybook", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
