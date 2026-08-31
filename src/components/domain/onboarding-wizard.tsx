@@ -335,7 +335,7 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
         ) : (
           <Button
             onClick={() => {
-              router.push("/");
+              router.push("/dashboard");
               router.refresh();
             }}
           >

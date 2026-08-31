@@ -9,6 +9,6 @@ export default async function OnboardingPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/login");
   const membership = await getServices().households.membershipFor(session.user.id);
-  if (membership) redirect("/");
+  if (membership) redirect("/dashboard");
   return <OnboardingWizard defaultName={session.user.name} />;
 }

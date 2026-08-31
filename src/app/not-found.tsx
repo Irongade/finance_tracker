@@ -9,7 +9,7 @@ export default function NotFound() {
         The address may have changed. Everything starts from the dashboard.
       </p>
       <Button asChild>
-        <Link href="/">Go to the dashboard</Link>
+        <Link href="/dashboard">Go to the dashboard</Link>
       </Button>
     </div>
   );

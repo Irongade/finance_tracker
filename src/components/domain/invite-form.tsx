@@ -37,7 +37,7 @@ export function InviteForm({
           setError(error.message ?? "Could not create the account.");
           return;
         }
-        router.push("/");
+        router.push("/dashboard");
         router.refresh();
       }}
     >

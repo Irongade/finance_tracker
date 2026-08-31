@@ -24,7 +24,7 @@ export interface NavItem {
 
 /** Section 7.3: the same items ungrouped on desktop; primary four + More on mobile. */
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/transactions", label: "Transactions", icon: ReceiptText },
   { href: "/bills", label: "Bills", icon: CalendarCheck },
   { href: "/goals", label: "Goals", icon: Target },
@@ -40,7 +40,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/help", label: "Help", icon: BookOpen },
 ];
 
-export const MOBILE_PRIMARY = ["/", "/transactions", "/goals"];
+export const MOBILE_PRIMARY = ["/dashboard", "/transactions", "/goals"];
 
 export const MORE_ITEMS = NAV_ITEMS.filter((i) => !MOBILE_PRIMARY.includes(i.href));
 

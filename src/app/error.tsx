@@ -24,7 +24,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
           <RotateCcw /> Try again
         </Button>
         <Button asChild variant="outline">
-          <Link href="/">Go to the dashboard</Link>
+          <Link href="/dashboard">Go to the dashboard</Link>
         </Button>
       </div>
     </div>

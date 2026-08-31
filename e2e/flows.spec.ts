@@ -19,7 +19,7 @@ test("sign in, golden dashboard, quick-add persists, settle up", async ({ page }
   await page.getByLabel("Email").fill(EMAIL);
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL("/dashboard");
 
   // section 12 golden values
   await expect(page.getByText("£2,155 left this month, as budgeted.")).toBeVisible();
@@ -48,7 +48,7 @@ test("sign in, golden dashboard, quick-add persists, settle up", async ({ page }
   await expect(page.getByText("E2E takeaway")).toBeVisible();
 
   // flow 3: settle up
-  await page.goto("/");
+  await page.goto("/dashboard");
   await page.getByRole("button", { name: "Settle up" }).click();
   const settled = page.waitForResponse((r) => r.url().endsWith("/api/settlements") && r.request().method() === "POST");
   await page.getByRole("button", { name: "Record payment" }).click();
@@ -71,7 +71,7 @@ test("sign in, golden dashboard, quick-add persists, settle up", async ({ page }
   // ...and the settlement, so the golden state is back for the next project
   const list = (await (await page.request.get("/api/settlements")).json()) as { settlements: { id: string }[] };
   for (const s of list.settlements) expect((await page.request.delete(`/api/settlements/${s.id}`)).status()).toBe(200);
-  await page.goto("/");
+  await page.goto("/dashboard");
   await expect(page.getByText("Ade owes P £27.50", { exact: true })).toBeVisible();
 });
 
@@ -80,7 +80,7 @@ test("month-end snapshot flow", async ({ page }) => {
   await page.getByLabel("Email").fill(EMAIL);
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL("/dashboard");
   await page.goto("/pots");
   await expect(page.getByText("£7,550 across 6 pots at the latest count.")).toBeVisible();
   const first = page.getByLabel(/Ade's LISA balance for/);

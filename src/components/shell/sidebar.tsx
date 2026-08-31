@@ -17,7 +17,7 @@ export function Sidebar() {
   return (
     <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-hairline bg-surface md:flex">
       <div className="px-5 pt-6 pb-4">
-        <Link href="/" className="display block truncate text-[22px] leading-none text-navy" title={brand}>
+        <Link href="/dashboard" className="display block truncate text-[22px] leading-none text-navy" title={brand}>
           {brand}
         </Link>
         <p className="mt-1 text-[11.5px] text-ink-muted">Household ledger</p>

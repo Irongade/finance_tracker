@@ -35,7 +35,7 @@ function LoginForm() {
           return;
         }
         const next = params.get("next");
-        router.push(next?.startsWith("/") ? next : "/");
+        router.push(next?.startsWith("/") ? next : "/dashboard");
         router.refresh();
       }}
     >

@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Help" };
 const STEP_KEYS = ["log", "month-end", "glance"];
 
 const TAB_NOTES: Record<string, string> = {
-  "/": "The combined view. All calculated, nothing to edit.",
+  "/dashboard": "The combined view. All calculated, nothing to edit.",
   "/transactions": "Log everything; Type comes from the category. The Shared toggle powers the settle-up.",
   "/bills": "Joint and personal recurring bills, with live Paid / Due / OVERDUE status.",
   "/goals": "The pots you both pay into: pledges per person, LISA bonus, Required £/mo, On track or Behind.",
@@ -58,7 +58,7 @@ export default function HelpPage() {
               </>,
               <>
                 Glance at the{" "}
-                <Link className="text-blue hover:underline" href="/">
+                <Link className="text-blue hover:underline" href="/dashboard">
                   Dashboard
                 </Link>{" "}
                 together: leftover, who owes whom, overdue bills, goal status, net worth.

@@ -6,6 +6,7 @@ import { type NextRequest, NextResponse } from "next/server";
  * invite links and static assets.
  */
 const PUBLIC = [
+  /^\/$/,
   /^\/login$/,
   /^\/register$/,
   /^\/forgot-password$/,

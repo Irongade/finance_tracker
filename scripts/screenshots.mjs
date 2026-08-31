@@ -9,7 +9,7 @@ import { chromium } from "@playwright/test";
 const BASE = process.env.BASE_URL ?? "http://localhost:3100";
 const OUT = "screenshots";
 const ROUTES = [
-  "/",
+  "/dashboard",
   "/transactions",
   "/bills",
   "/goals",
@@ -47,7 +47,7 @@ for (const [name, viewport] of Object.entries(VIEWPORTS)) {
   await page.getByLabel("Email").fill(process.env.SEED_USER1_EMAIL ?? "ade@example.com");
   await page.getByLabel("Password", { exact: true }).fill(process.env.SEED_USER1_PASSWORD ?? "password123");
   await page.getByRole("button", { name: "Sign in" }).click();
-  await page.waitForURL(`${BASE}/`);
+  await page.waitForURL(`${BASE}/dashboard`);
   page.on("console", (msg) => {
     if (msg.type() === "error") errors.push(`[${name}] ${page.url()}: ${msg.text()}`);
   });
@@ -76,7 +76,7 @@ for (const [name, viewport] of Object.entries(VIEWPORTS)) {
   await page.screenshot({ path: `${OUT}/${name}-after-quick-add.png`, fullPage: true, animations: "disabled" });
 
   // dashboard reflects it, then settle up
-  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/dashboard`, { waitUntil: "networkidle" });
   await page
     .getByRole("button", { name: /Settle up|Record a payment/ })
     .first()

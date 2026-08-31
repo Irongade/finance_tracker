@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Finance Tracker",
     short_name: "Finances",
     description: "Household ledger: spending, bills, goals, pots and net worth.",
-    start_url: "/",
+    start_url: "/dashboard",
     display: "standalone",
     background_color: "#F6F8FB",
     theme_color: "#1F3864",

@@ -16,7 +16,7 @@ function MobileTopBar() {
   const brand = household.name.trim() || "Finance Tracker";
   return (
     <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b border-hairline bg-paper/90 px-4 backdrop-blur md:hidden">
-      <Link href="/" className="display min-w-0 truncate text-[18px] leading-none text-navy">
+      <Link href="/dashboard" className="display min-w-0 truncate text-[18px] leading-none text-navy">
         {brand}
       </Link>
       <UserMenu compact />
