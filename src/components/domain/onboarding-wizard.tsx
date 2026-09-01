@@ -126,7 +126,11 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
             <span
               className={cn(
                 "inline-flex size-5 items-center justify-center rounded-full text-[11px]",
-                i < step ? "bg-fern text-white" : i === step ? "bg-navy text-white" : "bg-row-hover",
+                i < step
+                  ? "bg-fern text-white dark:text-paper"
+                  : i === step
+                    ? "bg-navy text-white dark:text-paper"
+                    : "bg-row-hover",
               )}
             >
               {i < step ? <Check className="size-3" /> : i + 1}
@@ -304,7 +308,7 @@ export function OnboardingWizard({ defaultName }: { defaultName: string }) {
               "Glance at the Dashboard together: leftover, who owes whom, overdue bills, goal status, net worth.",
             ].map((t, i) => (
               <li key={t} className="flex gap-3">
-                <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-navy text-[12px] font-semibold text-white">
+                <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-navy text-[12px] font-semibold text-white dark:text-paper">
                   {i + 1}
                 </span>
                 <span>{t}</span>

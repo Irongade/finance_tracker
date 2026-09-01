@@ -66,6 +66,37 @@
   --sidebar-ring: var(--workbook-blue);
 }
 
+/*
+ * Dark theme: the same ledger palette re-inked for a navy-dark ground.
+ * Tint backgrounds (mint, blush, butter) go deep; ink colours go light.
+ * Solid chips (bg-navy/bg-blue/bg-fern) keep their now-light fills and flip
+ * their glyphs to paper via `dark:text-paper` at the call site.
+ */
+.dark {
+  --ledger-navy: #b9cbf0;
+  --workbook-blue: #8db1f0;
+  --paper: #0f1420;
+  --surface: #171f31;
+  --hairline: #2b3550;
+  --row-hover: #202a40;
+  --ink: #e8edf8;
+  --ink-muted: #9aa8c7;
+  --mint: #1d3325;
+  --fern: #6fce9b;
+  --blush: #402024;
+  --brick: #f0968d;
+  --butter: #3a2f14;
+  --amber: #e3b452;
+  --ade-teal: #2e8fa3;
+  --p-plum: #8a4fbe;
+  --ade-teal-ink: #85cddd;
+  --p-plum-ink: #cbaaf0;
+
+  /* primary/sidebar-primary are now light fills, so their glyphs go dark */
+  --primary-foreground: #101627;
+  --sidebar-primary-foreground: #101627;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -148,6 +179,9 @@
   }
   ::selection {
     background: color-mix(in oklch, var(--workbook-blue) 22%, white);
+  }
+  .dark ::selection {
+    background: color-mix(in oklch, var(--workbook-blue) 34%, transparent);
   }
 }
 

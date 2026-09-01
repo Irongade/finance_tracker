@@ -67,6 +67,8 @@ export function TrendChart({ data, xKey, series, height = 260, showLegend = true
             formatter={(value) => formatPence(Number(value), { style: "whole" })}
             contentStyle={{
               borderRadius: 10,
+              background: "var(--surface)",
+              color: "var(--ink)",
               border: "1px solid var(--hairline)",
               boxShadow: "0 8px 24px rgb(27 42 68 / 0.08)",
               fontSize: 12,
@@ -123,6 +125,8 @@ export function BreakdownPie({ data, height = 240 }: { data: BreakdownSlice[]; h
             formatter={(value, name) => [formatPence(Number(value), { style: "whole" }), String(name)]}
             contentStyle={{
               borderRadius: 10,
+              background: "var(--surface)",
+              color: "var(--ink)",
               border: "1px solid var(--hairline)",
               boxShadow: "0 8px 24px rgb(27 42 68 / 0.08)",
               fontSize: 12,

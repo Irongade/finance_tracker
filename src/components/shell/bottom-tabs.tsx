@@ -42,7 +42,7 @@ export function BottomTabs() {
             type="button"
             onClick={() => open()}
             aria-label="Log spending"
-            className="-mt-6 flex size-14 items-center justify-center rounded-full bg-blue text-white shadow-[0_8px_20px_rgb(68_114_196/0.35)] transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="-mt-6 flex size-14 items-center justify-center rounded-full bg-blue text-white dark:text-paper shadow-[0_8px_20px_rgb(68_114_196/0.35)] transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             <Plus className="size-7" />
           </button>

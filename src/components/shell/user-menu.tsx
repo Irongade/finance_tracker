@@ -1,7 +1,8 @@
 "use client";
 
-import { LogOut, RefreshCw } from "lucide-react";
+import { LogOut, RefreshCw, SunMoon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { PersonBadge } from "@/components/domain/person-badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
@@ -19,6 +25,7 @@ import { useHousehold } from "@/store/household-store";
 
 export function UserMenu({ compact = false, className }: { compact?: boolean; className?: string }) {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
   const { users, currentUserId, refresh, saving } = useHousehold();
   const me = users.find((u) => u.id === currentUserId) ?? users[0];
   return (
@@ -55,6 +62,18 @@ export function UserMenu({ compact = false, className }: { compact?: boolean; cl
         >
           <RefreshCw /> Refresh
         </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <SunMoon className="text-muted-foreground" /> Theme
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuRadioGroup value={theme ?? "system"} onValueChange={setTheme}>
+              <DropdownMenuRadioItem value="light">Light</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="dark">Dark</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="system">System</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={async () => {

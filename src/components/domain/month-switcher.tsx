@@ -85,7 +85,11 @@ export function MonthSwitcher({
                   onClick={() => pick(value)}
                   className={cn(
                     "rounded-md px-2 py-1.5 text-[12.5px] font-medium hover:bg-row-hover focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                    isSelected ? "bg-blue text-white hover:bg-blue" : isToday ? "text-blue" : "text-ink",
+                    isSelected
+                      ? "bg-blue text-white dark:text-paper hover:bg-blue"
+                      : isToday
+                        ? "text-blue"
+                        : "text-ink",
                   )}
                 >
                   {label}

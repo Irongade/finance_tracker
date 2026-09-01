@@ -21,7 +21,12 @@ export const PERSON_STYLE: Record<PersonKey, { avatar: string; text: string; chi
     hex: "#2E8FA3",
   },
   user2: { avatar: "bg-p-plum text-white", text: "text-p-ink", chip: "bg-p-plum/12 text-p-ink", hex: "#8A4FBE" },
-  joint: { avatar: "bg-navy text-white", text: "text-navy", chip: "bg-navy/8 text-navy", hex: "#1F3864" },
+  joint: {
+    avatar: "bg-navy text-white dark:text-paper",
+    text: "text-navy",
+    chip: "bg-navy/8 text-navy",
+    hex: "#1F3864",
+  },
 };
 
 const SIZE = {

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -25,7 +26,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1F3864",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#1F3864" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F1420" },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -33,10 +37,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-GB" className={`${inter.variable} ${fraunces.variable} h-full antialiased`}>
+    // suppressHydrationWarning: next-themes sets the theme class on <html> pre-paint
+    <html lang="en-GB" className={`${inter.variable} ${fraunces.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
-        {children}
-        <Toaster position="top-center" theme="light" richColors closeButton />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          {children}
+          <Toaster position="top-center" richColors closeButton />
+        </ThemeProvider>
       </body>
     </html>
   );

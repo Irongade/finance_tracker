@@ -65,7 +65,7 @@ export default function HelpPage() {
               </>,
             ].map((step, i) => (
               <li key={STEP_KEYS[i]} className="flex gap-3">
-                <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-navy text-[12px] font-semibold text-white">
+                <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-navy text-[12px] font-semibold text-white dark:text-paper">
                   {i + 1}
                 </span>
                 <span>{step}</span>

@@ -177,7 +177,7 @@ function Rank({ n }: { n: number }) {
     <span
       className={cn(
         "inline-flex size-6 items-center justify-center rounded-full text-[12px] font-semibold",
-        n === 1 ? "bg-navy text-white" : "bg-row-hover text-ink-muted",
+        n === 1 ? "bg-navy text-white dark:text-paper" : "bg-row-hover text-ink-muted",
       )}
     >
       {n}
